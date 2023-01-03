@@ -1,0 +1,18 @@
+{
+  "name": "@TheBrenny/node-wry-linux-arm-gnueabihf",
+  "version": "0.0.0",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "arm"
+  ],
+  "main": "node-wry.linux-arm-gnueabihf.node",
+  "files": [
+    "node-wry.linux-arm-gnueabihf.node"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 10"
+  }
+}

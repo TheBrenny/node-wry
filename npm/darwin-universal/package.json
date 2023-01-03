@@ -1,0 +1,15 @@
+{
+  "name": "@TheBrenny/node-wry-darwin-universal",
+  "version": "0.0.0",
+  "os": [
+    "darwin"
+  ],
+  "main": "node-wry.darwin-universal.node",
+  "files": [
+    "node-wry.darwin-universal.node"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 10"
+  }
+}

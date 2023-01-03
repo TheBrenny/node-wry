@@ -1,0 +1,55 @@
+{
+  "name": "node-wry",
+  "version": "0.0.0",
+  "main": "src/js/index.js",
+  "types": "src/js/index.d.ts",
+  "napi": {
+    "name": "node-wry",
+    "npmClient": "pnpm",
+    "triples": {
+      "additional": [
+        "aarch64-apple-darwin",
+        "aarch64-unknown-linux-gnu",
+        "aarch64-unknown-linux-musl",
+        "aarch64-pc-windows-msvc",
+        "armv7-unknown-linux-gnueabihf",
+        "x86_64-unknown-linux-musl",
+        "x86_64-unknown-freebsd",
+        "i686-pc-windows-msvc",
+        "universal-apple-darwin"
+      ]
+    },
+    "package": {
+      "name": "@thebrenny/node-wry"
+    }
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@napi-rs/cli": "^2.14.0",
+    "ava": "^4.3.3"
+  },
+  "ava": {
+    "timeout": "3m"
+  },
+  "engines": {
+    "node": ">= 10"
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --js src/js/bindings.js --dts src/js/bindings.d.ts --platform --release",
+    "build:debug": "napi build --js src/js/bindings.js --dts src/js/bindings.d.ts --platform",
+    "prepublishOnly": "napi prepublish -t npm",
+    "test": "ava",
+    "universal": "napi universal",
+    "version": "napi version"
+  },
+  "packageManager": "yarn@3.3.1",
+  "pnpm": {
+    "patchedDependencies": {
+      "@napi-rs/cli@2.14.0": "patches/@napi-rs__cli@2.14.0.patch"
+    }
+  },
+  "dependencies": {
+    "get-promise-state": "^1.0.0"
+  }
+}

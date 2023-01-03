@@ -1,0 +1,530 @@
+diff --git a/scripts/index.js b/scripts/index.js
+index ebac20cdedd5afc6925eefc5f77e4e852bfa06e5..8c0fd3780118599cb53ba7835f064d1006582d24 100644
+--- a/scripts/index.js
++++ b/scripts/index.js
+@@ -12472,255 +12472,253 @@ indicate that the two-register addressing modes must never be used.  */
+ #endif  /* arm-features.h */
+ `;
+ 
+-const createJsBinding = (localName, pkgName) => `const { existsSync, readFileSync } = require('fs')
+-const { join } = require('path')
++const createJsBinding = (localName, pkgName, jsFile) => {
++	return `const {existsSync, readFileSync} = require('fs')
++const {resolve, dirname, relative} = require('path')
+ 
+-const { platform, arch } = process
++const {platform, arch} = process
+ 
+ let nativeBinding = null
+ let localFileExisted = false
+ let loadError = null
++let localBinPath = "";
+ 
+ function isMusl() {
+-  // For Node 10
+-  if (!process.report || typeof process.report.getReport !== 'function') {
+-    try {
+-      const lddPath = require('child_process').execSync('which ldd').toString().trim();
+-      return readFileSync(lddPath, 'utf8').includes('musl')
+-    } catch (e) {
+-      return true
+-    }
+-  } else {
+-    const { glibcVersionRuntime } = process.report.getReport().header
+-    return !glibcVersionRuntime
+-  }
++	// For Node 10
++	if(!process.report || typeof process.report.getReport !== 'function') {
++		try {
++			const lddPath = require('child_process').execSync('which ldd').toString().trim();
++			return readFileSync(lddPath, 'utf8').includes('musl')
++		} catch(e) {
++			return true
++		}
++	} else {
++		const {glibcVersionRuntime} = process.report.getReport().header
++		return !glibcVersionRuntime
++	}
+ }
+ 
+-switch (platform) {
+-  case 'android':
+-    switch (arch) {
+-      case 'arm64':
+-        localFileExisted = existsSync(join(__dirname, '${localName}.android-arm64.node'))
+-        try {
+-          if (localFileExisted) {
+-            nativeBinding = require('./${localName}.android-arm64.node')
+-          } else {
+-            nativeBinding = require('${pkgName}-android-arm64')
+-          }
+-        } catch (e) {
+-          loadError = e
+-        }
+-        break
+-      case 'arm':
+-        localFileExisted = existsSync(join(__dirname, '${localName}.android-arm-eabi.node'))
+-        try {
+-          if (localFileExisted) {
+-            nativeBinding = require('./${localName}.android-arm-eabi.node')
+-          } else {
+-            nativeBinding = require('${pkgName}-android-arm-eabi')
+-          }
+-        } catch (e) {
+-          loadError = e
+-        }
+-        break
+-      default:
+-        throw new Error(\`Unsupported architecture on Android \${arch}\`)
+-    }
+-    break
+-  case 'win32':
+-    switch (arch) {
+-      case 'x64':
+-        localFileExisted = existsSync(
+-          join(__dirname, '${localName}.win32-x64-msvc.node')
+-        )
+-        try {
+-          if (localFileExisted) {
+-            nativeBinding = require('./${localName}.win32-x64-msvc.node')
+-          } else {
+-            nativeBinding = require('${pkgName}-win32-x64-msvc')
+-          }
+-        } catch (e) {
+-          loadError = e
+-        }
+-        break
+-      case 'ia32':
+-        localFileExisted = existsSync(
+-          join(__dirname, '${localName}.win32-ia32-msvc.node')
+-        )
+-        try {
+-          if (localFileExisted) {
+-            nativeBinding = require('./${localName}.win32-ia32-msvc.node')
+-          } else {
+-            nativeBinding = require('${pkgName}-win32-ia32-msvc')
+-          }
+-        } catch (e) {
+-          loadError = e
+-        }
+-        break
+-      case 'arm64':
+-        localFileExisted = existsSync(
+-          join(__dirname, '${localName}.win32-arm64-msvc.node')
+-        )
+-        try {
+-          if (localFileExisted) {
+-            nativeBinding = require('./${localName}.win32-arm64-msvc.node')
+-          } else {
+-            nativeBinding = require('${pkgName}-win32-arm64-msvc')
+-          }
+-        } catch (e) {
+-          loadError = e
+-        }
+-        break
+-      default:
+-        throw new Error(\`Unsupported architecture on Windows: \${arch}\`)
+-    }
+-    break
+-  case 'darwin':
+-    localFileExisted = existsSync(join(__dirname, '${localName}.darwin-universal.node'))
+-    try {
+-      if (localFileExisted) {
+-        nativeBinding = require('./${localName}.darwin-universal.node')
+-      } else {
+-        nativeBinding = require('${pkgName}-darwin-universal')
+-      }
+-      break
+-    } catch {}
+-    switch (arch) {
+-      case 'x64':
+-        localFileExisted = existsSync(join(__dirname, '${localName}.darwin-x64.node'))
+-        try {
+-          if (localFileExisted) {
+-            nativeBinding = require('./${localName}.darwin-x64.node')
+-          } else {
+-            nativeBinding = require('${pkgName}-darwin-x64')
+-          }
+-        } catch (e) {
+-          loadError = e
+-        }
+-        break
+-      case 'arm64':
+-        localFileExisted = existsSync(
+-          join(__dirname, '${localName}.darwin-arm64.node')
+-        )
+-        try {
+-          if (localFileExisted) {
+-            nativeBinding = require('./${localName}.darwin-arm64.node')
+-          } else {
+-            nativeBinding = require('${pkgName}-darwin-arm64')
+-          }
+-        } catch (e) {
+-          loadError = e
+-        }
+-        break
+-      default:
+-        throw new Error(\`Unsupported architecture on macOS: \${arch}\`)
+-    }
+-    break
+-  case 'freebsd':
+-    if (arch !== 'x64') {
+-      throw new Error(\`Unsupported architecture on FreeBSD: \${arch}\`)
+-    }
+-    localFileExisted = existsSync(join(__dirname, '${localName}.freebsd-x64.node'))
+-    try {
+-      if (localFileExisted) {
+-        nativeBinding = require('./${localName}.freebsd-x64.node')
+-      } else {
+-        nativeBinding = require('${pkgName}-freebsd-x64')
+-      }
+-    } catch (e) {
+-      loadError = e
+-    }
+-    break
+-  case 'linux':
+-    switch (arch) {
+-      case 'x64':
+-        if (isMusl()) {
+-          localFileExisted = existsSync(
+-            join(__dirname, '${localName}.linux-x64-musl.node')
+-          )
+-          try {
+-            if (localFileExisted) {
+-              nativeBinding = require('./${localName}.linux-x64-musl.node')
+-            } else {
+-              nativeBinding = require('${pkgName}-linux-x64-musl')
+-            }
+-          } catch (e) {
+-            loadError = e
+-          }
+-        } else {
+-          localFileExisted = existsSync(
+-            join(__dirname, '${localName}.linux-x64-gnu.node')
+-          )
+-          try {
+-            if (localFileExisted) {
+-              nativeBinding = require('./${localName}.linux-x64-gnu.node')
+-            } else {
+-              nativeBinding = require('${pkgName}-linux-x64-gnu')
+-            }
+-          } catch (e) {
+-            loadError = e
+-          }
+-        }
+-        break
+-      case 'arm64':
+-        if (isMusl()) {
+-          localFileExisted = existsSync(
+-            join(__dirname, '${localName}.linux-arm64-musl.node')
+-          )
+-          try {
+-            if (localFileExisted) {
+-              nativeBinding = require('./${localName}.linux-arm64-musl.node')
+-            } else {
+-              nativeBinding = require('${pkgName}-linux-arm64-musl')
+-            }
+-          } catch (e) {
+-            loadError = e
+-          }
+-        } else {
+-          localFileExisted = existsSync(
+-            join(__dirname, '${localName}.linux-arm64-gnu.node')
+-          )
+-          try {
+-            if (localFileExisted) {
+-              nativeBinding = require('./${localName}.linux-arm64-gnu.node')
+-            } else {
+-              nativeBinding = require('${pkgName}-linux-arm64-gnu')
+-            }
+-          } catch (e) {
+-            loadError = e
+-          }
+-        }
+-        break
+-      case 'arm':
+-        localFileExisted = existsSync(
+-          join(__dirname, '${localName}.linux-arm-gnueabihf.node')
+-        )
+-        try {
+-          if (localFileExisted) {
+-            nativeBinding = require('./${localName}.linux-arm-gnueabihf.node')
+-          } else {
+-            nativeBinding = require('${pkgName}-linux-arm-gnueabihf')
+-          }
+-        } catch (e) {
+-          loadError = e
+-        }
+-        break
+-      default:
+-        throw new Error(\`Unsupported architecture on Linux: \${arch}\`)
+-    }
+-    break
+-  default:
+-    throw new Error(\`Unsupported OS: \${platform}, architecture: \${arch}\`)
++switch(platform) {
++	case 'android':
++		switch(arch) {
++			case 'arm64':
++				localBinPath = resolve(__dirname, dirname('${path$1.relative(jsFile, '.').replace(/\\/g, "\\\\")}'), 'npm', 'android-arm64', '${localName}.android-arm64.node')
++				localFileExisted = existsSync(localBinPath);
++				try {
++					if(localFileExisted) {
++						nativeBinding = require(\`\${localBinPath}\`)
++					} else {
++						nativeBinding = require('${pkgName}-android-arm64')
++					}
++				} catch(e) {
++					loadError = e
++				}
++				break
++			case 'arm':
++				localBinPath = resolve(__dirname, dirname('${path$1.relative(jsFile, '.').replace(/\\/g, "\\\\")}'), 'npm', 'android-arm-eabi', '${localName}.android-arm-eabi.node')
++				localFileExisted = existsSync(localBinPath)
++				try {
++					if(localFileExisted) {
++						nativeBinding = require(\`\${localBinPath}\`)
++					} else {
++						nativeBinding = require('${pkgName}-android-arm-eabi')
++					}
++				} catch(e) {
++					loadError = e
++				}
++				break
++			default:
++				throw new Error(\`Unsupported architecture on Android \${arch}\`)
++		}
++		break
++	case 'win32':
++		switch(arch) {
++			case 'x64':
++				localBinPath = resolve(__dirname, dirname('${path$1.relative(jsFile, '.').replace(/\\/g, "\\\\")}'), 'npm', 'win32-x64-msvc', '${localName}.win32-x64-msvc.node')
++				localFileExisted = existsSync(localBinPath)
++				try {
++					if(localFileExisted) {
++						nativeBinding = require(\`\${localBinPath}\`)
++					} else {
++						nativeBinding = require('${pkgName}-win32-x64-msvc')
++					}
++				} catch(e) {
++					loadError = e
++				}
++				break
++			case 'ia32':
++				localBinPath = resolve(__dirname, dirname('${path$1.relative(jsFile, '.').replace(/\\/g, "\\\\")}'), 'npm', 'win32-ia32-msvc', '${localName}.win32-ia32-msvc.node')
++				localFileExisted = existsSync(localBinPath)
++				try {
++					if(localFileExisted) {
++						nativeBinding = require(\`\${localBinPath}\`)
++					} else {
++						nativeBinding = require('${pkgName}-win32-ia32-msvc')
++					}
++				} catch(e) {
++					loadError = e
++				}
++				break
++			case 'arm64':
++				localBinPath = resolve(__dirname, dirname('${path$1.relative(jsFile, '.').replace(/\\/g, "\\\\")}'), 'npm', 'win32-arm64-msvc', '${localName}.win32-arm64-msvc.node')
++				localFileExisted = existsSync(localBinPath)
++				try {
++					if(localFileExisted) {
++						nativeBinding = require(\`\${localBinPath}\`)
++					} else {
++						nativeBinding = require('${pkgName}-win32-arm64-msvc')
++					}
++				} catch(e) {
++					loadError = e
++				}
++				break
++			default:
++				throw new Error(\`Unsupported architecture on Windows: \${arch}\`)
++		}
++		break
++	case 'darwin':
++		localBinPath = resolve(__dirname, dirname('${path$1.relative(jsFile, '.').replace(/\\/g, "\\\\")}'), 'npm', 'darwin-universal', '${localName}.darwin-universal.node')
++		localFileExisted = existsSync(localBinPath)
++		try {
++			if(localFileExisted) {
++				nativeBinding = require(\`\${localBinPath}\`)
++			} else {
++				nativeBinding = require('${pkgName}-darwin-universal')
++			}
++			break
++		} catch {}
++		switch(arch) {
++			case 'x64':
++				localBinPath = resolve(__dirname, dirname('${path$1.relative(jsFile, '.').replace(/\\/g, "\\\\")}'), 'npm', 'darwin-x64', '${localName}.darwin-x64.node')
++				localFileExisted = existsSync(localBinPath)
++				try {
++					if(localFileExisted) {
++						nativeBinding = require(\`\${localBinPath}\`)
++					} else {
++						nativeBinding = require('${pkgName}-darwin-x64')
++					}
++				} catch(e) {
++					loadError = e
++				}
++				break
++			case 'arm64':
++				localBinPath = resolve(__dirname, dirname('${path$1.relative(jsFile, '.').replace(/\\/g, "\\\\")}'), 'npm', 'darwin-arm64', '${localName}.darwin-arm64.node')
++				localFileExisted = existsSync(localBinPath)
++				try {
++					if(localFileExisted) {
++						nativeBinding = require(\`\${localBinPath}\`)
++					} else {
++						nativeBinding = require('${pkgName}-darwin-arm64')
++					}
++				} catch(e) {
++					loadError = e
++				}
++				break
++			default:
++				throw new Error(\`Unsupported architecture on macOS: \${arch}\`)
++		}
++		break
++	case 'freebsd':
++		if(arch !== 'x64') {
++			throw new Error(\`Unsupported architecture on FreeBSD: \${arch}\`)
++		}
++		localBinPath = resolve(__dirname, dirname('${path$1.relative(jsFile, '.').replace(/\\/g, "\\\\")}'), 'npm', 'freebsd-x64', '${localName}.freebsd-x64.node')
++		localFileExisted = existsSync(localBinPath)
++		try {
++			if(localFileExisted) {
++				nativeBinding = require(\`\${localBinPath}\`)
++			} else {
++				nativeBinding = require('${pkgName}-freebsd-x64')
++			}
++		} catch(e) {
++			loadError = e
++		}
++		break
++	case 'linux':
++		switch(arch) {
++			case 'x64':
++				if(isMusl()) {
++					localBinPath = resolve(__dirname, dirname('${path$1.relative(jsFile, '.').replace(/\\/g, "\\\\")}'), 'npm', 'linux-x64-musl', '${localName}.linux-x64-musl.node')
++					localFileExisted = existsSync(localBinPath)
++					try {
++						if(localFileExisted) {
++							nativeBinding = require(\`\${localBinPath}\`)
++						} else {
++							nativeBinding = require('${pkgName}-linux-x64-musl')
++						}
++					} catch(e) {
++						loadError = e
++					}
++				} else {
++					localBinPath = resolve(__dirname, dirname('${path$1.relative(jsFile, '.').replace(/\\/g, "\\\\")}'), 'npm', 'linux-x64-gnu', '${localName}.linux-x64-gnu.node')
++					localFileExisted = existsSync(localBinPath)
++					try {
++						if(localFileExisted) {
++							nativeBinding = require(\`\${localBinPath}\`)
++						} else {
++							nativeBinding = require('${pkgName}-linux-x64-gnu')
++						}
++					} catch(e) {
++						loadError = e
++					}
++				}
++				break
++			case 'arm64':
++				if(isMusl()) {
++					localBinPath = resolve(__dirname, dirname('${path$1.relative(jsFile, '.').replace(/\\/g, "\\\\")}'), 'npm', 'linux-arm64-musl', '${localName}.linux-arm64-musl.node')
++					localFileExisted = existsSync(localBinPath)
++					try {
++						if(localFileExisted) {
++							nativeBinding = require(\`\${localBinPath}\`)
++						} else {
++							nativeBinding = require('${pkgName}-linux-arm64-musl')
++						}
++					} catch(e) {
++						loadError = e
++					}
++				} else {
++					localBinPath = resolve(__dirname, dirname('${path$1.relative(jsFile, '.').replace(/\\/g, "\\\\")}'), 'npm', 'linux-arm64-gnu', '${localName}.linux-arm64-gnu.node')
++					localFileExisted = existsSync(localBinPath)
++					try {
++						if(localFileExisted) {
++							nativeBinding = require(\`\${localBinPath}\`)
++						} else {
++							nativeBinding = require('${pkgName}-linux-arm64-gnu')
++						}
++					} catch(e) {
++						loadError = e
++					}
++				}
++				break
++			case 'arm':
++				localBinPath = resolve(__dirname, dirname('${path$1.relative(jsFile, '.').replace(/\\/g, "\\\\")}'), 'npm', 'linux-arm-gnueabihf', '${localName}.linux-arm-gnueabihf.node')
++				localFileExisted = existsSync(localBinPath)
++				try {
++					if(localFileExisted) {
++						nativeBinding = require(\`\${localBinPath}\`)
++					} else {
++						nativeBinding = require('${pkgName}-linux-arm-gnueabihf')
++					}
++				} catch(e) {
++					loadError = e
++				}
++				break
++			default:
++				throw new Error(\`Unsupported architecture on Linux: \${arch}\`)
++		}
++		break
++	default:
++		throw new Error(\`Unsupported OS: \${platform}, architecture: \${arch}\`)
+ }
+ 
+-if (!nativeBinding) {
+-  if (loadError) {
+-    throw loadError
+-  }
+-  throw new Error(\`Failed to load native binding\`)
++if(!nativeBinding) {
++	if(loadError) {
++		throw loadError
++	}
++	throw new Error(\`Failed to load native binding\`)
+ }
+ 
+-`;
++`};
+ 
+ var _a;
+ const debug$8 = debugFactory('build');
+@@ -12844,7 +12842,7 @@ class BuildCommand extends Command {
+             let cargoMetadata;
+             try {
+                 debug$8('Start parse toml');
+-                cargoMetadata = JSON.parse(require$$1$2.execSync(`cargo metadata --format-version 1 --manifest-path ${cargoTomlPath}`, {
++                cargoMetadata = JSON.parse(require$$1$2.execSync(`cargo metadata --format-version 1 --manifest-path "${cargoTomlPath}"`, {
+                     stdio: 'pipe',
+                     maxBuffer: 1024 * 1024 * 10,
+                 }).toString('utf8'));
+@@ -13093,7 +13091,7 @@ class BuildCommand extends Command {
+             const distFileName = this.bin
+                 ? cargoArtifactName
+                 : `${binaryName}${platformName}.node`;
+-            const distModulePath = path$1.join((_d = this.destDir) !== null && _d !== void 0 ? _d : '.', distFileName);
++            const distModulePath = path$1.join((_d = this.destDir) !== null && _d !== void 0 ? _d : `./npm/${triple.platformArchABI}/`, distFileName);
+             const parsedDist = path$1.parse(distModulePath);
+             if (parsedDist.dir && !require$$0$2.existsSync(parsedDist.dir)) {
+                 yield mkdirAsync(parsedDist.dir, { recursive: true }).catch((e) => {
+@@ -13125,7 +13123,7 @@ class BuildCommand extends Command {
+                     ? path$1.join(process.cwd(), this.jsBinding)
+                     : null;
+                 const idents = yield processIntermediateTypeFile(intermediateTypeFile, dtsFilePath, this.noDtsHeader);
+-                yield writeJsBinding(binaryName, (_g = this.jsPackageName) !== null && _g !== void 0 ? _g : packageName, jsBindingFilePath, idents);
++				yield writeJsBinding(binaryName, (_g = this.jsPackageName) !== null && _g !== void 0 ? _g : packageName, jsBindingFilePath, idents);
+                 if (this.pipe && jsBindingFilePath) {
+                     const pipeCommand = `${this.pipe} ${jsBindingFilePath}`;
+                     console.info(`Run ${chalk$1.green(pipeCommand)}`);
+@@ -13277,7 +13275,7 @@ function indentLines(input, spaces) {
+ function writeJsBinding(localName, packageName, distFileName, idents) {
+     return __awaiter$1(this, void 0, void 0, function* () {
+         if (distFileName && idents.length) {
+-            const template = createJsBinding(localName, packageName);
++			const template = createJsBinding(localName, packageName, distFileName);
+             const declareCodes = `const { ${idents.join(', ')} } = nativeBinding\n`;
+             const exportsCode = idents.reduce((acc, cur) => `${acc}\nmodule.exports.${cur} = ${cur}`, '');
+             yield writeFileAsync(distFileName, template + declareCodes + exportsCode + '\n', 'utf8');
