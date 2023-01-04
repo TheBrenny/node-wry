@@ -1,4 +1,4 @@
-name: 'Crossbuild and test'
+name: Crossbuild and test
 env:
   DEBUG: 'napi:*'
   MACOSX_DEPLOYMENT_TARGET: '10.13'
@@ -72,7 +72,6 @@ jobs:
           path: ./*.node
           if-no-files-found: error
   test-host:
-    if: '0' == '1'
     strategy:
       fail-fast: false
       matrix:
