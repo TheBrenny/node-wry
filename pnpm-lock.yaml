@@ -8,6 +8,10 @@ patchedDependencies:
 specifiers:
   '@napi-rs/cli': ^2.14.0
   ava: ^4.3.3
+  get-promise-state: ^1.0.0
+
+dependencies:
+  get-promise-state: 1.0.0
 
 devDependencies:
   '@napi-rs/cli': 2.14.0_rziuhjv6b2xw4bugwtjjn56rxa
@@ -486,6 +490,10 @@ packages:
     resolution: {integrity: sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==}
     engines: {node: 6.* || 8.* || >= 10.*}
     dev: true
+
+  /get-promise-state/1.0.0:
+    resolution: {integrity: sha512-fIy1wwYArzRAH3rz/vDEvb8PsJTMSVbPEwqNngT8P8lIBBzYMGczmCr8E7pqs8r5Jfjk7G6iKUDqdLRLhUIqAg==}
+    dev: false
 
   /glob-parent/5.1.2:
     resolution: {integrity: sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==}
