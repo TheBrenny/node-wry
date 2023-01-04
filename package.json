@@ -43,7 +43,7 @@
     "universal": "napi universal",
     "version": "napi version"
   },
-  "packageManager": "yarn@3.3.1",
+  "packageManager": "pnpm@7.22.0",
   "pnpm": {
     "patchedDependencies": {
       "@napi-rs/cli@2.14.0": "patches/@napi-rs__cli@2.14.0.patch"
