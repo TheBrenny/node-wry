@@ -3,6 +3,7 @@ env:
   DEBUG: 'napi:*'
   MACOSX_DEPLOYMENT_TARGET: '10.13'
   APP_NAME: 'node-wry'
+  PKG_CONFIG_SYSROOT_DIR: '/'
 on:
   push:
     branches:
@@ -24,11 +25,9 @@ jobs:
         target: [
             'x86_64-apple-darwin',
             "aarch64-apple-darwin",
-
             'x86_64-pc-windows-msvc',
             "i686-pc-windows-msvc",
             "aarch64-pc-windows-msvc",
-
             "aarch64-unknown-linux-gnu",
             "aarch64-unknown-linux-musl",
             "armv7-unknown-linux-gnueabihf",
@@ -67,7 +66,7 @@ jobs:
       - name: Install Node dependencies
         run: pnpm install
       - name: Build
-        run: pnpm build --zig --target ${{ matrix.target }}
+        run: pnpm build "." --zig --target ${{ matrix.target }}
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
