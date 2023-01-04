@@ -1,0 +1,16 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "build:debug",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [],
+			"label": "npm: build:debug",
+			"detail": "napi build --js src/js/bindings.js --dts src/js/bindings.d.ts --platform"
+		}
+	]
+}

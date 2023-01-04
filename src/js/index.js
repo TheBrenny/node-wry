@@ -1,5 +1,6 @@
 require("get-promise-state"); // I'm not sure if this plays nicely with everything else...
 
+const path = require("path");
 const {fork, ChildProcess} = require("child_process");
 const {serialize, deserialize} = require("./serialisation");
 const bindings = require('./bindings');
@@ -76,6 +77,8 @@ class WebView {
 
 	constructor(settings = {}) {
 		this.#settings = settings ?? {};
+
+		if(!!settings?.icon) settings.icon = path.resolve(settings.icon);
 
 		let trace = (new Error()).stack.split("\n")[2];
 		trace = trace.substring(7, trace.indexOf(" ", 7)); // just gets the calling function name

@@ -1,37 +1,14 @@
+const path = require("path");
 const {WebView} = require("../");
 
 let wv = new WebView({
     title: "Hello World! Form the code too!",
     center: true,
+    url: "https://html5test.com",
+    backgroundColor: "#000000",
+    initializationScript: "console.log('Hello world!!')",
+    icon: path.resolve(__dirname, "wry_logo.png")
     // transparent: true,
-
 });
 
 wv.run();
-
-/*
-const {fork} = require("child_process");
-const path = require("path");
-
-// wv.run();
-let i = 1;
-(async (d) => console.log(d))(i++);
-(async (d) => console.log(d))(i++);
-(async (d) => console.log(d))(i++);
-(async (d) => console.log(d))(i++);
-(async (d) => console.log(d))(i++);
-fork(path.join(__dirname, "child.js"));
-(async (d) => console.log(d))(i++);
-(async (d) => console.log(d))(i++);
-(async (d) => console.log(d))(i++);
-(async (d) => console.log(d))(i++);
-(async (d) => console.log(d))(i++);
-(async (d) => console.log(d))(i++);
-// (async () => {
-//     while(true) {
-//         await new Promise((res) => setTimeout(res, 1000));
-//         console.log(".\b");
-//     }
-// })();
-
-*/

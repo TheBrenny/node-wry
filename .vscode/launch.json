@@ -15,7 +15,12 @@
             "outFiles": [
                 "${workspaceFolder}/src/**/*.js",
                 "${workspaceFolder}/examples/**/*.js"
-            ]
+            ],
+            "preLaunchTask": "${defaultBuildTask}",
+            "console": "integratedTerminal",
+            "env": {
+                "RUST_BACKTRACE": "1"
+            }
         }
     ]
 }
