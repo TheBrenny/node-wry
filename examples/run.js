@@ -11,4 +11,10 @@ let wv = new WebView({
     // transparent: true,
 });
 
+wv.addWindowEventListener((event, data) => {
+    if(event === "Unknown") return;
+    if(data.StartCause === "WaitCancelled") return;
+    console.log(`${event}: ${JSON.stringify(data)}`);
+});
+
 wv.run();

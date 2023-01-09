@@ -1,17 +1,18 @@
 <br />
 <p align="center">
   <a href="#"> <!-- Change the HREF to the link! -->
-    <img src="/img.png" alt="Title Image">
+    <img src="./docs/res/banner.png" alt="Title Image">
   </a>
 
   <p align="center">
-    One-liner describing the project - a knacky qoute is always fun!
+    A NodeJS wrapper over Tauri's Wry Webview library!
     <br />
-    <a href="#"><strong><em>Powered by ... Feel free to remove</em></strong></a>
+    <a href="https://github.com/tauri-apps/wry"><strong><em>Powered by Wry</em></strong></a>
 	<br />
-	Status: <em>Version Info and a status quote</em>
+	Status: <em>0.1.0 - Still in Rapid Dev</em>
+    Unofficial
 	<br />
-    <a href="https://nodei.co/npm/  <  package  >  /"><img src="https://nodei.co/npm/  <  package  >  .png" alt="NPM Banner"></a>
+    <a href="https://nodei.co/npm/node-wry/"><img src="https://nodei.co/npm/node-wry.png" alt="NPM Banner"></a>
     <br />
     <!-- SHIELDS -->
     <a href="https://shields.io"><img src="https://img.shields.io/badge/under-development-red" alt="Shields!"></a>
@@ -23,12 +24,7 @@
 <span style="background:yellow;color:black;">*Show a really quick and easy way to implement the package into a project!*</span>
 
 ```console
-$ git clone brenny-web-server
-$ cd brenny-web-server
-$ node configure.js express # or "vanilla"
-$ npm start
-
-Server is listening at http://localhost:80...
+$ npm install node-wry
 ```
 
 <span style="background:yellow;color:black;">*Provide any visual output, either as a codebox, or an image/gif!*</span>

@@ -1,6 +1,29 @@
 Here are some things because I will definitely forget:
 
-- [ ] Make sure all the options for building a webview are implemented and working
-- [ ] Be able to hook into the event loop and run a callback when a message is received
+- [x] Make sure all the options for building a webview are implemented and working
+- [ ] Implement the "Handler" options:
+  - [ ] .with_custom_protocol()
+  - [ ] .with_download_completed_handler()
+  - [ ] .with_download_started_handler()
+  - [ ] .with_file_drop_handler()
+  - [ ] .with_ipc_handler()
+  - [ ] .with_navigation_handler()
+  - [ ] .with_new_window_req_handler()
+  - [ ] .with_web_context()
+- [x] Be able to hook into the event loop and run a callback when a message is received
   - [ ] This means we need to expose all the "Event" types so users can match on them
+    - [x] NewEvents
+    - [ ] WindowEvent
+    - [ ] DeviceEvent
+    - [ ] UserEvent
+    - [ ] MenuEvent
+    - [ ] TrayEvent
+    - [ ] GlobalShortcutEvent
+    - [ ] Suspended
+    - [ ] Resumed
+    - [ ] MainEventsCleared
+    - [ ] RedrawRequested
+    - [ ] RedrawEventsCleared
+    - [ ] LoopDestroyed
   - [ ] Also expose a way to create an event proxy for the user to send messages to the webview
+- [ ] Fix the CI to auto-publish using GitHub

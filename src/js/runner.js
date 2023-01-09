@@ -9,9 +9,20 @@ process.on("message", (serialisedMessage) => {
         fn = new Function(`return ${fn}`)();
         let retVal = fn.call(this, ...args);
 
-        process.send(serialize(retVal ?? null))
+        // Sending {retVal: any} means we can make sure we're actually sending the retVal
+        process.send(serialize({retVal: retVal ?? null}))
     } catch(e) {
         log("Error", logger.types.ERROR);
         log(e, logger.types.ERROR);
     }
 });
+
+function sendMessageCallback(message) {
+    try {
+        process.send(message);
+    } catch(e) {
+        log("Error", logger.types.ERROR);
+        log(e, logger.types.ERROR);
+    }
+}
+global.sendMessageCallback = sendMessageCallback;
