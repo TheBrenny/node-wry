@@ -137,8 +137,12 @@ class WebView {
     }
 
     kill() {
-        log(`Killing Webview`)
-        this.#webviewFork.handle.disconnect(); // don't use kill, but use d/c to gracefully kill
+        if(this.#webviewFork.handle.connected) {
+            log(`Killing Webview`);
+            this.#webviewFork.handle.kill("SIGTERM");
+        } else {
+            log(`Webview already closed!`, logger.types.WARN);
+        }
     }
 
     toJSON() {

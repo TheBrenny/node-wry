@@ -18,3 +18,4 @@ wv.addWindowEventListener((event, data) => {
 });
 
 wv.run();
+setTimeout(() => wv.kill(), 3000);
