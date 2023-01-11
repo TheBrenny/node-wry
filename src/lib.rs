@@ -195,8 +195,8 @@ impl InternalWebView {
         self.event_loop.run_return(move |event, _, control_flow| {
             *control_flow = ControlFlow::Wait;
 
-            let wvEvent = WebViewEvent::from(&event).toJSON();
-            let _res = eventHandler(wvEvent);
+            let wvEvent = createEvent(&event);
+            let _res = eventHandler(wvEvent.to_string());
 
             if deh {
                 match event {

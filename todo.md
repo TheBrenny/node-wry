@@ -13,7 +13,7 @@ Here are some things because I will definitely forget:
 - [x] Be able to hook into the event loop and run a callback when a message is received
   - [ ] This means we need to expose all the "Event" types so users can match on them
     - [x] NewEvents
-    - [ ] WindowEvent
+    - [x] WindowEvent
     - [ ] DeviceEvent
     - [ ] UserEvent
     - [ ] MenuEvent
