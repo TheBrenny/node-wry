@@ -5,13 +5,10 @@ use std::{
 
 use serde_json::json;
 
-use wry::application::event::{Event, MouseScrollDelta, StartCause, WindowEvent};
+use wry::application::event::{Event, MouseScrollDelta, StartCause, WindowEvent, DeviceEvent};
 
 pub fn createEvent(wryEvent: &Event<'_, ()>) -> serde_json::Value {
-    let mut eventName: &str = "Unknown";
-    // TODO: json!({}).as_object_mut().unwrap() to then insert into it, rather than creating a new object each time
-    // Then at the bottom, we can go json!({ "eventName": eventName, "data": data }) ?
-    // Otherwise it would be json!({ "eventName": eventName, "data": json!(data) })
+    let mut eventName: &str = "unknown";
     let mut data = serde_json::Map::new();
 
     match wryEvent {
@@ -45,7 +42,7 @@ pub fn createEvent(wryEvent: &Event<'_, ()>) -> serde_json::Value {
                     }),
                 );
             },
-            &_ => {},
+            &_ => eventName = "newEventNotImplemented",
         },
         Event::WindowEvent {
             window_id, event, ..
@@ -53,17 +50,17 @@ pub fn createEvent(wryEvent: &Event<'_, ()>) -> serde_json::Value {
             data.insert("windowId".to_string(), json!(hash(window_id)));
             match event {
                 WindowEvent::Resized(size) => {
-                    eventName = "resized";
+                    eventName = "windowResized";
                     data.insert("width".to_string(), json!(size.width));
                     data.insert("height".to_string(), json!(size.height));
                 },
                 WindowEvent::Moved(position) => {
-                    eventName = "moved";
+                    eventName = "windowMoved";
                     data.insert("x".to_string(), json!(position.x));
                     data.insert("y".to_string(), json!(position.y));
                 },
-                WindowEvent::CloseRequested => eventName = "closeRequested",
-                WindowEvent::Destroyed => eventName = "destroyed",
+                WindowEvent::CloseRequested => eventName = "windowCloseRequested",
+                WindowEvent::Destroyed => eventName = "windowDestroyed",
                 WindowEvent::DroppedFile(path) => {
                     eventName = "droppedFile";
                     data.insert("path".to_string(), json!(path));
@@ -143,7 +140,7 @@ pub fn createEvent(wryEvent: &Event<'_, ()>) -> serde_json::Value {
                     phase,
                     modifiers,
                 } => {
-                    eventName = "mouseWheel";
+                    eventName = "windowMouseWheel";
                     data.insert("deviceId".to_string(), json!(hash(device_id)));
                     data.insert(
                         "delta".to_string(),
@@ -253,10 +250,69 @@ pub fn createEvent(wryEvent: &Event<'_, ()>) -> serde_json::Value {
                     );
                 },
                 WindowEvent::DecorationsClick => eventName = "decorationsClick",
-                &_ => {},
+                &_ => eventName = "windowNotImplemented",
             }
         },
-        &_ => {},
+        Event::DeviceEvent {
+            device_id, event, ..
+        } => {
+            data.insert("windowId".to_string(), json!(hash(device_id)));
+            match event {
+                DeviceEvent::Added => eventName = "deviceAdded",
+                DeviceEvent::Removed => eventName = "deviceRemoved",
+                DeviceEvent::MouseMotion { delta, .. } => {
+                    eventName = "mouseMotion";
+                    data.insert(
+                        "delta".to_string(),
+                        json!({
+                            "x": delta.0,
+                            "y": delta.1,
+                        }),
+                    );
+                },
+                DeviceEvent::MouseWheel { delta, .. } => {
+                    eventName = "mouseWheel";
+                    data.insert(
+                        "delta".to_string(),
+                        json!({
+                            "x": match delta {
+                                MouseScrollDelta::LineDelta(x, _) => x.to_string(),
+                                MouseScrollDelta::PixelDelta(pos) => pos.x.to_string(),
+                                &_ => "Infinity".to_string()
+                            },
+                            "y": match delta {
+                                MouseScrollDelta::LineDelta(_, y) => y.to_string(),
+                                MouseScrollDelta::PixelDelta(pos) => pos.y.to_string(),
+                                &_ => "Infinity".to_string()
+                            },
+                        }),
+                    );
+                },
+                DeviceEvent::Motion { axis, value, .. } => {
+                    eventName = "motion";
+                    data.insert("axis".to_string(), json!(axis));
+                    data.insert("value".to_string(), json!(value));
+                },
+                DeviceEvent::Button { button, state, .. } => {
+                    eventName = "button";
+                    data.insert("button".to_string(), json!(button));
+                    data.insert("state".to_string(), json!(format!("{:?}", state)));
+                },
+                DeviceEvent::Key(key) => {
+                    eventName = "key";
+                    data.insert("key".to_string(), json!({
+                        "code": key.physical_key,
+                        "state": format!("{:?}", key.state),
+                    }));
+                },
+                DeviceEvent::Text { codepoint, .. } => {
+                    eventName = "deviceText";
+                    data.insert("codepoint".to_string(), json!(codepoint));
+                },
+                &_ => eventName = "deviceNotImplemented",
+            }
+        },
+        &_ => eventName = "unknown",
     }
 
     json!({
