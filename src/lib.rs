@@ -56,7 +56,7 @@ fn colorTupleFromString(color: String) -> (u8, u8, u8, u8) {
 
 #[napi(js_name = "WebView")]
 pub struct InternalWebView {
-    event_loop: EventLoop<()>,
+    event_loop: EventLoop<serde_json::Value>,
     #[allow(dead_code)] // HACK: This shouldn't be dead code! don't forget to remove this before 1.0.o
     webview: WebView,
     // event_proxy: EventProxy,
@@ -69,7 +69,7 @@ impl InternalWebView {
     pub fn new(settings: Option<NodeWebViewSettingsBuilder>) -> Self {
         let settings = NodeWebViewSettings::from(settings);
 
-        let event_loop = EventLoop::new();
+        let event_loop = EventLoop::<serde_json::Value>::with_user_event();
         // TODO: Create and expose the event proxy
         let mut _wb = WindowBuilder::new()
       .with_always_on_bottom(settings.alwaysOnLayer == "bottom")
@@ -195,12 +195,11 @@ impl InternalWebView {
         self.event_loop.run_return(move |event, _, control_flow| {
             *control_flow = ControlFlow::Wait;
 
-            let wvEvent = createEvent(&event);
+            let wvEvent = eventToJson(&event);
             let _res = eventHandler(wvEvent.to_string());
 
             if deh {
                 match event {
-                    // Event::NewEvents(StartCause::Init) => println!("Node-Wry has started!"),
                     Event::WindowEvent {
                         event: WindowEvent::CloseRequested,
                         ..

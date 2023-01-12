@@ -5,9 +5,9 @@ use std::{
 
 use serde_json::json;
 
-use wry::application::event::{Event, MouseScrollDelta, StartCause, WindowEvent, DeviceEvent};
+use wry::application::event::{DeviceEvent, Event, MouseScrollDelta, StartCause, WindowEvent};
 
-pub fn createEvent(wryEvent: &Event<'_, ()>) -> serde_json::Value {
+pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value {
     let mut eventName: &str = "unknown";
     let mut data = serde_json::Map::new();
 
@@ -300,10 +300,13 @@ pub fn createEvent(wryEvent: &Event<'_, ()>) -> serde_json::Value {
                 },
                 DeviceEvent::Key(key) => {
                     eventName = "key";
-                    data.insert("key".to_string(), json!({
-                        "code": key.physical_key,
-                        "state": format!("{:?}", key.state),
-                    }));
+                    data.insert(
+                        "key".to_string(),
+                        json!({
+                            "code": key.physical_key,
+                            "state": format!("{:?}", key.state),
+                        }),
+                    );
                 },
                 DeviceEvent::Text { codepoint, .. } => {
                     eventName = "deviceText";
@@ -312,6 +315,67 @@ pub fn createEvent(wryEvent: &Event<'_, ()>) -> serde_json::Value {
                 &_ => eventName = "deviceNotImplemented",
             }
         },
+        Event::UserEvent(event) => {
+            eventName = "userEvent";
+            data.insert("event".to_string(), json!(event));
+        },
+        Event::MenuEvent {
+            window_id,
+            menu_id,
+            origin,
+            ..
+        } => {
+            eventName = "menuEvent";
+            data.insert(
+                "windowId".to_string(),
+                json!(match window_id {
+                    Some(window_id) => hash(window_id),
+                    None => "null".to_string(),
+                }),
+            );
+            data.insert("menuId".to_string(), json!(menu_id.0));
+            data.insert("origin".to_string(), json!(format!("{:?}", origin)));
+        },
+        Event::TrayEvent {
+            id,
+            bounds,
+            event,
+            position,
+            ..
+        } => {
+            eventName = "trayEvent";
+            data.insert("id".to_string(), json!(id.0));
+            data.insert(
+                "bounds".to_string(),
+                json!({
+                    "x": bounds.position.x,
+                    "y": bounds.position.y,
+                    "width": bounds.size.width,
+                    "height": bounds.size.height,
+                }),
+            );
+            data.insert("event".to_string(), json!(format!("{:?}", event)));
+            data.insert(
+                "position".to_string(),
+                json!({
+                    "x": position.x,
+                    "y": position.y,
+                }),
+            );
+        },
+        Event::GlobalShortcutEvent(id) => {
+            eventName = "globalShortcutEvent";
+            data.insert("acceleratorId".to_string(), json!(id.0));
+        },
+        Event::Suspended => eventName = "suspended",
+        Event::Resumed => eventName = "resumed",
+        Event::MainEventsCleared => eventName = "mainEventsCleared",
+        Event::RedrawRequested(window_id) => {
+            eventName = "redrawRequested";
+            data.insert("windowId".to_string(), json!(hash(window_id)));
+        },
+        Event::RedrawEventsCleared => eventName = "redrawEventsCleared",
+        Event::LoopDestroyed => eventName = "loopDestroyed",
         &_ => eventName = "unknown",
     }
 

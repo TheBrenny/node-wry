@@ -11,19 +11,19 @@ Here are some things because I will definitely forget:
   - [ ] .with_new_window_req_handler()
   - [ ] .with_web_context()
 - [x] Be able to hook into the event loop and run a callback when a message is received
-  - [ ] This means we need to expose all the "Event" types so users can match on them
+  - [x] This means we need to expose all the "Event" types so users can match on them
     - [x] NewEvents
     - [x] WindowEvent
-    - [ ] DeviceEvent
-    - [ ] UserEvent
-    - [ ] MenuEvent
-    - [ ] TrayEvent
-    - [ ] GlobalShortcutEvent
-    - [ ] Suspended
-    - [ ] Resumed
-    - [ ] MainEventsCleared
-    - [ ] RedrawRequested
-    - [ ] RedrawEventsCleared
-    - [ ] LoopDestroyed
-  - [ ] Also expose a way to create an event proxy for the user to send messages to the webview
+    - [x] DeviceEvent
+    - [x] UserEvent
+    - [x] MenuEvent
+    - [x] TrayEvent
+    - [x] GlobalShortcutEvent
+    - [x] Suspended
+    - [x] Resumed
+    - [x] MainEventsCleared
+    - [x] RedrawRequested
+    - [x] RedrawEventsCleared
+    - [x] LoopDestroyed
+  - [ ] Also expose a way to create an event proxy for the user to send UserEvents
 - [ ] Fix the CI to auto-publish using GitHub
