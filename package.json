@@ -1,6 +1,6 @@
 {
   "name": "node-wry",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "main": "src/js/index.js",
   "types": "src/js/index.d.ts",
   "napi": {
