@@ -1,5 +1,5 @@
 const path = require("path");
-const {WebView} = require("../");
+const {WebView, EventType} = require("../");
 
 let wv = new WebView({
     title: "Hello World! Form the code too!",
@@ -11,9 +11,9 @@ let wv = new WebView({
     // transparent: true,
 });
 
-wv.addWindowEventListener((event, data) => {
-    if(event === "Unknown") return;
-    if(data.StartCause === "WaitCancelled") return;
+wv.addWindowEventListener(({event, data}) => {
+    if(event === EventType.Unknown) return;
+    if(event === EventType.WaitCancelled) return;
     console.log(`${event}: ${JSON.stringify(data)}`);
 });
 

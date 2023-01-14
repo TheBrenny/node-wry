@@ -1,4 +1,6 @@
 import { WebViewSettings } from "./bindings";
+import { WebViewEvent } from "./events";
+export { WebViewEvent, EventType } from "./events";
 
 export class WebView {
   constructor(settings?: WebViewSettings);
@@ -8,9 +10,4 @@ export class WebView {
   kill(): void;
   serialize(): string;
   static deserialize(data: string): void;
-}
-
-export interface WebViewEvent {
-  event: string;
-  data?: string;
 }

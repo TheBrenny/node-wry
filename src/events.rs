@@ -8,6 +8,7 @@ use serde_json::json;
 use wry::application::event::{DeviceEvent, Event, MouseScrollDelta, StartCause, WindowEvent};
 
 pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value {
+    #[allow(unused_assignments)]
     let mut eventName: &str = "unknown";
     let mut data = serde_json::Map::new();
 
@@ -107,6 +108,7 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
                     data.insert("alt".to_string(), json!(modState.alt_key()));
                     data.insert("super".to_string(), json!(modState.super_key()));
                 },
+                #[allow(deprecated)]
                 WindowEvent::CursorMoved {
                     device_id,
                     position,
@@ -117,7 +119,7 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
                     data.insert("x".to_string(), json!(position.x));
                     data.insert("y".to_string(), json!(position.y));
                     data.insert(
-                        "modifiers".to_string(),
+                        "modifiers_deprecated".to_string(),
                         json!({
                             "shift": modifiers.shift_key(),
                             "control": modifiers.control_key(),
@@ -134,6 +136,7 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
                     eventName = "cursorLeft";
                     data.insert("deviceId".to_string(), json!(hash(device_id)));
                 },
+                #[allow(deprecated)]
                 WindowEvent::MouseWheel {
                     device_id,
                     delta,
@@ -146,20 +149,20 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
                         "delta".to_string(),
                         json!({
                             "x": match delta {
-                                MouseScrollDelta::LineDelta(x, _) => x.to_string(),
-                                MouseScrollDelta::PixelDelta(pos) => pos.x.to_string(),
-                                &_ => "Infinity".to_string()
+                                MouseScrollDelta::LineDelta(x, _) => x.clone(),
+                                MouseScrollDelta::PixelDelta(pos) => pos.x as f32,
+                                &_ => f32::INFINITY
                             },
                             "y": match delta {
-                                MouseScrollDelta::LineDelta(_, y) => y.to_string(),
-                                MouseScrollDelta::PixelDelta(pos) => pos.y.to_string(),
-                                &_ => "Infinity".to_string()
+                                MouseScrollDelta::LineDelta(_, y) => y.clone(),
+                                MouseScrollDelta::PixelDelta(pos) => pos.y as f32,
+                                &_ => f32::INFINITY
                             },
                         }),
                     );
                     data.insert("phase".to_string(), json!(format!("{:?}", phase)));
                     data.insert(
-                        "modifiers".to_string(),
+                        "modifiers_deprecated".to_string(),
                         json!({
                             "shift": modifiers.shift_key(),
                             "control": modifiers.control_key(),
@@ -168,6 +171,7 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
                         }),
                     );
                 },
+                #[allow(deprecated)]
                 WindowEvent::MouseInput {
                     device_id,
                     state,
@@ -179,7 +183,7 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
                     data.insert("state".to_string(), json!(format!("{:?}", state)));
                     data.insert("button".to_string(), json!(format!("{:?}", button)));
                     data.insert(
-                        "modifiers".to_string(),
+                        "modifiers_deprecated".to_string(),
                         json!({
                             "shift": modifiers.shift_key(),
                             "control": modifiers.control_key(),
@@ -224,7 +228,7 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
                         "force".to_string(),
                         json!(match touch.force {
                             Some(force) => force.normalized(),
-                            None => 0.0,
+                            None => -1.0,
                         }),
                     );
                 },
@@ -256,7 +260,7 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
         Event::DeviceEvent {
             device_id, event, ..
         } => {
-            data.insert("windowId".to_string(), json!(hash(device_id)));
+            data.insert("deviceId".to_string(), json!(hash(device_id)));
             match event {
                 DeviceEvent::Added => eventName = "deviceAdded",
                 DeviceEvent::Removed => eventName = "deviceRemoved",
@@ -276,14 +280,14 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
                         "delta".to_string(),
                         json!({
                             "x": match delta {
-                                MouseScrollDelta::LineDelta(x, _) => x.to_string(),
-                                MouseScrollDelta::PixelDelta(pos) => pos.x.to_string(),
-                                &_ => "Infinity".to_string()
+                                MouseScrollDelta::LineDelta(x, _) => x.clone(),
+                                MouseScrollDelta::PixelDelta(pos) => pos.x as f32,
+                                &_ => f32::INFINITY
                             },
                             "y": match delta {
-                                MouseScrollDelta::LineDelta(_, y) => y.to_string(),
-                                MouseScrollDelta::PixelDelta(pos) => pos.y.to_string(),
-                                &_ => "Infinity".to_string()
+                                MouseScrollDelta::LineDelta(_, y) => y.clone(),
+                                MouseScrollDelta::PixelDelta(pos) => pos.y as f32,
+                                &_ => f32::INFINITY
                             },
                         }),
                     );
@@ -330,7 +334,7 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
                 "windowId".to_string(),
                 json!(match window_id {
                     Some(window_id) => hash(window_id),
-                    None => "null".to_string(),
+                    None => "".to_string(),
                 }),
             );
             data.insert("menuId".to_string(), json!(menu_id.0));

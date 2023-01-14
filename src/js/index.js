@@ -6,6 +6,7 @@ const {serialize, deserialize} = require("./serialisation");
 const bindings = require('./bindings');
 const {resolve} = require("path");
 const logger = require("./logger");
+const {isEvent} = require("./events")
 const log = logger.bind(this, "main");
 
 /**
@@ -121,8 +122,10 @@ class WebView {
         if(this.#webviewFork.promise.isPending) await this.#webviewFork.promise;
 
         // `type` is either "message" or "error"
-        const messageHandler = (error, data) => {
-            if(!error) this.#listeners.forEach((fn) => fn(data.event, data.data));
+        const messageHandler = (error, event) => {
+            if(!isEvent(event)) error = new Error(`Invalid event type: ${event.event}`);
+
+            if(!error) this.#listeners.forEach((fn) => fn(event));
             else log(`Error in message handler: ${error}`, logger.types.ERROR);
         };
         this.#webviewFork = runFork({ // We probably don't need to re-set this, but I will anyway
