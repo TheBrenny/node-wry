@@ -1,36 +1,36 @@
 declare namespace Events {
     interface Unknown {
-        "event": "unknown",
+        "event": EventType.Unknown,
         "data": {}
     }
     interface Init {
-        "event": "init",
+        "event": EventType.Init,
         "data": {}
     }
     interface Poll {
-        "event": "poll",
+        "event": EventType.Poll,
         "data": {}
     }
     interface ResumeTimeReached {
-        "event": "resumeTimeReached",
+        "event": EventType.ResumeTimeReached,
         "data": {
             "start": Number,
             "requestedResumeTime": Number
         }
     }
     interface WaitCancelled {
-        "event": "waitCancelled",
+        "event": EventType.WaitCancelled,
         "data": {
             "start": Number,
             "requestedResumeTime": Number | null
         }
     }
     interface NewEventNotImplemented {
-        "event": "newEventNotImplemented",
+        "event": EventType.NewEventNotImplemented,
         "data": {}
     }
     interface WindowResized {
-        "event": "windowResized",
+        "event": EventType.WindowResized,
         "data": {
             "windowId": String,
             "width": Number,
@@ -38,7 +38,7 @@ declare namespace Events {
         }
     }
     interface WindowMoved {
-        "event": "windowMoved",
+        "event": EventType.WindowMoved,
         "data": {
             "windowId": String,
             "x": Number,
@@ -46,53 +46,53 @@ declare namespace Events {
         }
     }
     interface WindowCloseRequested {
-        "event": "windowCloseRequested",
+        "event": EventType.WindowCloseRequested,
         "data": {
             "windowId": String
         }
     }
     interface WindowDestroyed {
-        "event": "windowDestroyed",
+        "event": EventType.WindowDestroyed,
         "data": {
             "windowId": String
         }
     }
     interface DroppedFile {
-        "event": "droppedFile",
+        "event": EventType.DroppedFile,
         "data": {
             "windowId": String,
             "path": String
         }
     }
     interface HoveredFile {
-        "event": "hoveredFile",
+        "event": EventType.HoveredFile,
         "data": {
             "windowId": String,
             "path": String
         }
     }
     interface HoveredFileCancelled {
-        "event": "hoveredFileCancelled",
+        "event": EventType.HoveredFileCancelled,
         "data": {
             "windowId": String
         }
     }
     interface ReceivedImeText {
-        "event": "receivedImeText",
+        "event": EventType.ReceivedImeText,
         "data": {
             "windowId": String,
             "text": String
         }
     }
     interface Focused {
-        "event": "focused",
+        "event": EventType.Focused,
         "data": {
             "windowId": String,
             "focused": Boolean
         }
     }
     interface KeyboardInput {
-        "event": "keyboardInput",
+        "event": EventType.KeyboardInput,
         "data": {
             "windowId": String,
             "deviceId": String,
@@ -105,7 +105,7 @@ declare namespace Events {
         }
     }
     interface ModifiersChanged {
-        "event": "modifiersChanged",
+        "event": EventType.ModifiersChanged,
         "data": {
             "windowId": String,
             "shift": Boolean,
@@ -115,7 +115,7 @@ declare namespace Events {
         }
     }
     interface CursorMoved {
-        "event": "cursorMoved",
+        "event": EventType.CursorMoved,
         "data": {
             "windowId": String,
             "deviceId": String,
@@ -130,21 +130,21 @@ declare namespace Events {
         }
     }
     interface CursorEntered {
-        "event": "cursorEntered",
+        "event": EventType.CursorEntered,
         "data": {
             "windowId": String,
             "deviceId": String,
         }
     }
     interface CursorLeft {
-        "event": "cursorLeft",
+        "event": EventType.CursorLeft,
         "data": {
             "windowId": String,
             "deviceId": String
         }
     }
     interface WindowMouseWheel {
-        "event": "windowMouseWheel",
+        "event": EventType.WindowMouseWheel,
         "data": {
             "windowId": String,
             "deviceId": String,
@@ -162,7 +162,7 @@ declare namespace Events {
         }
     }
     interface MouseInput {
-        "event": "mouseInput",
+        "event": EventType.MouseInput,
         "data": {
             "windowId": String,
             "deviceId": String,
@@ -177,7 +177,7 @@ declare namespace Events {
         }
     }
     interface TouchpadPressure {
-        "event": "touchpadPressure",
+        "event": EventType.TouchpadPressure,
         "data": {
             "windowId": String,
             "deviceId": String,
@@ -186,7 +186,7 @@ declare namespace Events {
         }
     }
     interface AxisMotion {
-        "event": "axisMotion",
+        "event": EventType.AxisMotion,
         "data": {
             "windowId": String,
             "deviceId": String,
@@ -195,7 +195,7 @@ declare namespace Events {
         }
     }
     interface Touch {
-        "event": "touch",
+        "event": EventType.Touch,
         "data": {
             "windowId": String,
             "deviceId": String,
@@ -209,7 +209,7 @@ declare namespace Events {
         }
     }
     interface ScaleFactorChanged {
-        "event": "scaleFactorChanged",
+        "event": EventType.ScaleFactorChanged,
         "data": {
             "windowId": String,
             "scaleFactor": Number,
@@ -220,38 +220,38 @@ declare namespace Events {
         }
     }
     interface ThemeChanged {
-        "event": "themeChanged",
+        "event": EventType.ThemeChanged,
         "data": {
             "windowId": String,
             "theme": DeviceTheme
         }
     }
     interface DecorationsClick {
-        "event": "decorationsClick",
+        "event": EventType.DecorationsClick,
         "data": {
             "windowId": String
         }
     }
     interface WindowNotImplemented {
-        "event": "windowNotImplemented",
+        "event": EventType.WindowNotImplemented,
         "data": {
             "windowId": String
         }
     }
     interface DeviceAdded {
-        "event": "deviceAdded",
+        "event": EventType.DeviceAdded,
         "data": {
             "deviceId": String
         }
     }
     interface DeviceRemoved {
-        "event": "deviceRemoved",
+        "event": EventType.DeviceRemoved,
         "data": {
             "deviceId": String
         }
     }
     interface MouseMotion {
-        "event": "mouseMotion",
+        "event": EventType.MouseMotion,
         "data": {
             "deviceId": String,
             "delta": {
@@ -261,7 +261,7 @@ declare namespace Events {
         }
     }
     interface MouseWheel {
-        "event": "mouseWheel",
+        "event": EventType.MouseWheel,
         "data": {
             "deviceId": String,
             "delta": {
@@ -271,7 +271,7 @@ declare namespace Events {
         }
     }
     interface Motion {
-        "event": "motion",
+        "event": EventType.Motion,
         "data": {
             "deviceId": String,
             "axis": Number,
@@ -279,7 +279,7 @@ declare namespace Events {
         }
     }
     interface Button {
-        "event": "button",
+        "event": EventType.Button,
         "data": {
             "deviceId": String,
             "button": Number,
@@ -287,7 +287,7 @@ declare namespace Events {
         }
     }
     interface Key {
-        "event": "key",
+        "event": EventType.Key,
         "data": {
             "deviceId": String,
             "key": {
@@ -297,26 +297,26 @@ declare namespace Events {
         }
     }
     interface DeviceText {
-        "event": "deviceText",
+        "event": EventType.DeviceText,
         "data": {
             "deviceId": String,
             "codepoint": String
         }
     }
     interface DeviceNotImplemented {
-        "event": "deviceNotImplemented",
+        "event": EventType.DeviceNotImplemented,
         "data": {
             "deviceId": String
         }
     }
     interface UserEvent {
-        "event": "userEvent",
+        "event": EventType.UserEvent,
         "data": {
             "event": Object
         }
     }
     interface MenuEvent {
-        "event": "menuEvent",
+        "event": EventType.MenuEvent,
         "data": {
             "windowId": String,
             "menuId": Number,
@@ -324,7 +324,7 @@ declare namespace Events {
         }
     }
     interface TrayEvent {
-        "event": "trayEvent",
+        "event": EventType.TrayEvent,
         "data": {
             "id": Number,
             "bounds": {
@@ -341,35 +341,35 @@ declare namespace Events {
         }
     }
     interface GlobalShortcutEvent {
-        "event": "globalShortcutEvent",
+        "event": EventType.GlobalShortcutEvent,
         "data": {
             "acceleratorId": Number
         }
     }
     interface Suspended {
-        "event": "suspended",
+        "event": EventType.Suspended,
         "data": {}
     }
     interface Resumed {
-        "event": "resumed",
+        "event": EventType.Resumed,
         "data": {}
     }
     interface MainEventsCleared {
-        "event": "mainEventsCleared",
+        "event": EventType.MainEventsCleared,
         "data": {}
     }
     interface RedrawRequested {
-        "event": "redrawRequested",
+        "event": EventType.RedrawRequested,
         "data": {
             "windowId": String
         }
     }
     interface RedrawEventsCleared {
-        "event": "redrawEventsCleared",
+        "event": EventType.RedrawEventsCleared,
         "data": {}
     }
     interface LoopDestroyed {
-        "event": "loopDestroyed",
+        "event": EventType.LoopDestroyed,
         "data": {}
     }
 }
@@ -613,6 +613,7 @@ declare enum TrayEvent {
     "DoubleClick"
 }
 
+// TODO: Maybe there's a way that we can generate this EventType enum?
 export enum EventType {
     Unknown = "unknown",
     Init = "init",

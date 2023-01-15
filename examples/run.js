@@ -7,15 +7,20 @@ let wv = new WebView({
     url: "https://html5test.com",
     backgroundColor: "#000000",
     initializationScript: "console.log('Hello world!!')",
-    icon: path.resolve(__dirname, "wry_logo.png")
+    icon: path.resolve(__dirname, "wry_logo.png"),
+    defaultEventHandler: false,
     // transparent: true,
 });
 
 wv.addWindowEventListener(({event, data}) => {
+    console.log(`${event}: ${JSON.stringify(data)}`);
+
     if(event === EventType.Unknown) return;
     if(event === EventType.WaitCancelled) return;
-    console.log(`${event}: ${JSON.stringify(data)}`);
+    if(event === EventType.WindowCloseRequested) {
+        if(data.windowId === wv.id) wv.kill();
+    };
 });
 
 wv.run();
-setTimeout(() => wv.kill(), 3000);
+// setTimeout(() => wv.kill(), 3000);

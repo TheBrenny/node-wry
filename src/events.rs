@@ -1,7 +1,8 @@
 use std::{
-    hash::{Hash, Hasher},
     time::{Instant, SystemTime, UNIX_EPOCH},
 };
+
+use crate::hash;
 
 use serde_json::json;
 
@@ -400,10 +401,3 @@ fn instantToMillis(instant: &Instant) -> u32 {
         .unwrap_or(0)
 }
 
-// HACK:
-// TODO: Watching https://github.com/tauri-apps/tao/issues/667 to see if we can implement a numeric ID getter instead of having to hash on every event!
-fn hash<H: Hash>(hashable: H) -> String {
-    let mut hasher = std::collections::hash_map::DefaultHasher::new();
-    hashable.hash(&mut hasher);
-    hasher.finish().to_string()
-}

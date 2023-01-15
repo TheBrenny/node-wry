@@ -1,7 +1,8 @@
 #![deny(clippy::all)]
 #![allow(non_snake_case)]
 
-use std::fs;
+use std::{fs, hash::Hasher};
+use std::hash::Hash;
 
 use wry::{
     application::{
@@ -57,10 +58,10 @@ fn colorTupleFromString(color: String) -> (u8, u8, u8, u8) {
 #[napi(js_name = "WebView")]
 pub struct InternalWebView {
     event_loop: EventLoop<serde_json::Value>,
-    #[allow(dead_code)] // HACK: This shouldn't be dead code! don't forget to remove this before 1.0.o
     webview: WebView,
     // event_proxy: EventProxy,
     defaultEventHandler: bool,
+    hash: String,
 }
 
 #[napi]
@@ -182,7 +183,16 @@ impl InternalWebView {
             event_loop,
             webview,
             defaultEventHandler: settings.defaultEventHandler,
+            hash: "".to_string()
         }
+    }
+
+    #[napi]
+    pub fn hash(&mut self) -> String {
+        if self.hash == "" {
+            self.hash = hash(self.webview.window().id());
+        }
+        self.hash.clone()
     }
 
     #[napi(ts_args_type = "callback: (data: String) => void")]
@@ -206,7 +216,7 @@ impl InternalWebView {
                     } => {
                         *control_flow = ControlFlow::Exit;
                         println!("Node-Wry has closed!");
-                    }
+                    },
                     _ => (),
                 }
             }
@@ -229,10 +239,18 @@ fn buildDefaultIcon(size: u32) -> Vec<u8> {
     icon
 }
 
+// This returns an Option because if the user doesn't supply a theme, we can 
 fn getTheme(theme: String) -> Option<Theme> {
-    Some(match theme.as_str() {
-        "dark" => Theme::Dark,
-        "light" => Theme::Light,
-        _ => Theme::default(),
-    })
+    match theme.as_str() {
+        "dark" => Some(Theme::Dark),
+        "light" => Some(Theme::Light),
+        _ => None,
+    }
+}
+
+// MAYBE: Maybe we can make export this to the JS. Maybe NAPI has a page on Generics that could help?
+pub fn hash<H: Hash>(hashable: H) -> String {
+    let mut hasher = std::collections::hash_map::DefaultHasher::new();
+    hashable.hash(&mut hasher);
+    hasher.finish().to_string()
 }
