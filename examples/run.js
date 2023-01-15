@@ -1,5 +1,5 @@
 const path = require("path");
-const {WebView, EventType, addUserEvent: addCustomEvent} = require("../");
+const {WebView, EventType, addCustomEvent} = require("../");
 
 let wv = new WebView({
     title: "Hello World! Form the code too!",

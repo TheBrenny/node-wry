@@ -1,6 +1,6 @@
 import { WebViewSettings } from "./bindings";
 import { WebViewEvent } from "./events";
-export { WebViewEvent, EventType, addUserEvent } from "./events";
+export { WebViewEvent, EventType, addCustomEvent } from "./events";
 
 export class WebView {
     constructor(settings?: WebViewSettings);

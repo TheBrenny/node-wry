@@ -663,6 +663,7 @@ export enum EventType {
 }
 
 export type WebViewEvent =
+    Events.UserEvent |
     Events.Unknown |
     Events.Init |
     Events.Poll |
@@ -701,7 +702,6 @@ export type WebViewEvent =
     Events.Key |
     Events.DeviceText |
     Events.DeviceNotImplemented |
-    Events.UserEvent |
     Events.MenuEvent |
     Events.TrayEvent |
     Events.GlobalShortcutEvent |
@@ -713,4 +713,4 @@ export type WebViewEvent =
     Events.LoopDestroyed;
 
 export function isEvent(obj: Object): boolean;
-export function addUserEvent(eventName: String): void;
+export function addCustomEvent(eventName: String): void;

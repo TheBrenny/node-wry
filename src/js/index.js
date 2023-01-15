@@ -24,7 +24,7 @@ class WebView {
 
         if(!!settings?.icon) settings.icon = path.resolve(settings.icon);
         this.#build();
-        
+
         debugWebview = this;
     }
 
@@ -112,5 +112,5 @@ class WebView {
 module.exports = {
     WebView,
     EventType: events.EventType,
-    addUserEvent: events.addUserEvent,
+    addCustomEvent: events.addCustomEvent,
 };

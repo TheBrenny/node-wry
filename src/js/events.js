@@ -37,7 +37,6 @@ const EventType = {
     "Key": "key",
     "DeviceText": "deviceText",
     "DeviceNotImplemented": "deviceNotImplemented",
-    "UserEvent": "userEvent",
     "MenuEvent": "menuEvent",
     "TrayEvent": "trayEvent",
     "GlobalShortcutEvent": "globalShortcutEvent",
@@ -51,10 +50,10 @@ const EventType = {
 
 const eventTypes = Object.values(EventType);
 
-const userEvents = new Set();
+const customEvents = new Set();
 
-function addUserEvent(eventName) {
-    userEvents.add(eventName);
+function addCustomEvent(eventName) {
+    customEvents.add(eventName);
 }
 
 function isEvent(obj) {
@@ -66,14 +65,14 @@ function isEvent(obj) {
     for(const k of keys) if(!validKeys.includes(k)) return false;
 
     if(!(obj.data instanceof Object)) return false;
-    if(!eventTypes.includes(obj.event) && !userEvents.has(obj.event)) return false;
+    if(!eventTypes.includes(obj.event) && !customEvents.has(obj.event)) return false;
 
     return true;
 }
 
 module.exports = {
     isEvent,
-    addUserEvent,
+    addCustomEvent,
 };
 
 Object.defineProperty(module.exports, "EventType", {
