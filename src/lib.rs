@@ -59,7 +59,7 @@ fn colorTupleFromString(color: String) -> (u8, u8, u8, u8) {
 pub struct InternalWebView {
     event_loop: EventLoop<serde_json::Value>,
     webview: WebView,
-    // event_proxy: EventProxy,
+    // event_proxy: EventLoopProxy<serde_json::Value>, // MAYBE: I actually don't think this is necessary?
     defaultEventHandler: bool,
     hash: String,
 }
@@ -71,6 +71,7 @@ impl InternalWebView {
         let settings = NodeWebViewSettings::from(settings);
 
         let event_loop = EventLoop::<serde_json::Value>::with_user_event();
+        // let event_proxy = event_loop.create_proxy();
         // TODO: Create and expose the event proxy
         let mut _wb = WindowBuilder::new()
       .with_always_on_bottom(settings.alwaysOnLayer == "bottom")
@@ -181,6 +182,7 @@ impl InternalWebView {
 
         Self {
             event_loop,
+            // event_proxy,
             webview,
             defaultEventHandler: settings.defaultEventHandler,
             hash: "".to_string()

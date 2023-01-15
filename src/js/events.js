@@ -51,6 +51,12 @@ const EventType = {
 
 const eventTypes = Object.values(EventType);
 
+const userEvents = new Set();
+
+function addUserEvent(eventName) {
+    userEvents.add(eventName);
+}
+
 function isEvent(obj) {
     if(!(obj instanceof Object)) return false;
 
@@ -60,13 +66,14 @@ function isEvent(obj) {
     for(const k of keys) if(!validKeys.includes(k)) return false;
 
     if(!(obj.data instanceof Object)) return false;
-    if(!eventTypes.includes(obj.event)) return false;
+    if(!eventTypes.includes(obj.event) && !userEvents.has(obj.event)) return false;
 
     return true;
 }
 
 module.exports = {
     isEvent,
+    addUserEvent,
 };
 
 Object.defineProperty(module.exports, "EventType", {
