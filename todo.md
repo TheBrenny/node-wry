@@ -25,5 +25,5 @@ Here are some things because I will definitely forget:
     - [x] RedrawRequested
     - [x] RedrawEventsCleared
     - [x] LoopDestroyed
-  - [ ] Also expose a way to create an event proxy for the user to send UserEvents
+  - [x] ~~Also expose a way to create an event proxy for the user to send UserEvents~~ No EventProxy because the JS just handles the events anyway. Instead we've added custom events to the JS side, and allowed a way to emit **ALL** events (yes, including Wry based ones).
 - [ ] Fix the CI to auto-publish using GitHub
