@@ -7,37 +7,37 @@ const logger = require("./logger");
 const events = require("./events");
 const {nextTick} = require("process");
 const log = logger.bind(this, "main");
-const {runFork} = require("./forks");
+const {Fork} = require("./forks");
 
 let debugWebview;
 
 class WebView {
     #id;
     #settings = {};
-    #webviewFork = null;
+    /** @type Fork */
+    #webviewFork;
     #listeners = [];
 
     constructor(settings = {}) {
+        log("Creating WebView.", logger.types.INFO);
         this.#settings = settings ?? {};
 
         if(!!settings?.icon) settings.icon = path.resolve(settings.icon);
-
-        // This is a hack to prevent a `new WebView()` from being built upon deserialisation
-        let trace = (new Error()).stack.split("\n")[2];
-        trace = trace.substring(7, trace.indexOf(" ", 7)); // just gets the calling function name
-        if(trace !== "WebView.deserialize") this.#build();
-        else log("Deserialised WebView", logger.types.INFO)
-
+        this.#build();
+        
         debugWebview = this;
     }
 
     get id() {return this.#id;}
     get debugWebviewFork() {return this.#webviewFork;}
+    async getTitle() {
+        
+    }
 
     #build() {
-        this.#webviewFork = runFork({
+        this.#webviewFork = new Fork({
             name: "webview",
-            fn: (s) => {global.wv = new bindings.WebView(s); return global.wv.hash();},
+            fn: (s) => {global.wv = new bindings.WebView(s); return global.wv.hash;},
             args: [this.#settings]
         });
         this.#webviewFork.promise.then((id) => this.#id = id);
@@ -72,39 +72,41 @@ class WebView {
             }
             if(!!error) log(`Error in message handler: ${error}`, logger.types.ERROR);
         };
-        this.#webviewFork = runFork({ // We probably don't need to re-set this, but I will anyway
-            name: "webview",
+        this.#webviewFork.reuse({ // We probably don't need to re-set this, but I will anyway
             fn: () => global.wv.run(global.sendMessageCallback),
             args: [],
             messageHandler: messageHandler
         });
-        this.#webviewFork.promise = this.#webviewFork.promise.finally(() => {
+        this.#webviewFork.promise.finally(() => {
             this.kill();
         });
     }
 
     kill() {
-        if(this.#webviewFork.handle.connected) {
+        if(this.#webviewFork.isConnected) {
             log(`Killing Webview`);
-            this.#webviewFork.handle.kill("SIGTERM");
+            this.#webviewFork.kill("SIGTERM");
         } else {
             log(`Webview already closed!`, logger.types.WARN);
         }
     }
 
-    toJSON() {
-        let m = {
-            settings: serialize(this.#settings),
-            webviewFork: serialize(this.#webviewFork),
-        };
-        return `WebView{${serialize(m)}}`;
-    }
+    // TBH: I don't think this actually gets used.
+    // Also: I don't think it even *can* get serialised. We can ser the settings, but not the fork...
+    //
+    // toJSON() {
+    //     let m = {
+    //         settings: serialize(this.#settings),
+    //         webviewFork: serialize(this.#webviewFork),
+    //     };
+    //     return `WebView{${serialize(m)}}`;
+    // }
 
-    static fromJSON(data) {
-        let {settings, webviewFork} = JSON.parse(data.substring("WebView{".length, data.length - 1));
-        let wv = new WebView(settings);
-        wv.#webviewFork = webviewFork;
-    }
+    // static fromJSON(data) {
+    //     let {settings, webviewFork} = JSON.parse(data.substring("WebView{".length, data.length - 1));
+    //     let wv = new WebView(settings);
+    //     wv.#webviewFork = webviewFork;
+    // }
 }
 
 module.exports = {

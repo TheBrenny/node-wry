@@ -1,5 +1,5 @@
 const path = require("path");
-const {WebView, EventType, addUserEvent} = require("../");
+const {WebView, EventType, addUserEvent: addCustomEvent} = require("../");
 
 let wv = new WebView({
     title: "Hello World! Form the code too!",
@@ -12,13 +12,11 @@ let wv = new WebView({
     // transparent: true,
 });
 
-addUserEvent("customEvent");
-
 wv.addWindowEventListener(({event, data}) => {
     if(event === EventType.WindowCloseRequested) {
         if(data.windowId === wv.id) {
             wv.kill();
-            process.exit(1);
+            process.exit(0);
         }
     };
     if(event === "customEvent") {
@@ -27,5 +25,13 @@ wv.addWindowEventListener(({event, data}) => {
 });
 
 wv.run();
-setInterval(() => wv.emitEvent("customEvent", {num: 1}), 1000);
-// setTimeout(() => wv.kill(), 3000);
+// setTimeout(() => {
+//     wv.resize(wv.width + 100, wv.height + 100)
+// }, 1000);
+
+// Testing custom events
+// addCustomEvent("customEvent");
+// let i = 0;
+// setInterval(() => {
+//     wv.emitEvent("customEvent", {num: i++})
+// }, 1000);

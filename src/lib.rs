@@ -189,7 +189,7 @@ impl InternalWebView {
         }
     }
 
-    #[napi]
+    #[napi(getter)]
     pub fn hash(&mut self) -> String {
         if self.hash == "" {
             self.hash = hash(self.webview.window().id());

@@ -4,7 +4,12 @@ const {fork, ChildProcess} = require("child_process");
 const {serialize, deserialize} = require("./serialisation");
 const {resolve} = require("path");
 const logger = require("./logger");
-const log = logger.bind(this, "fork");
+const log = () => {
+    let args = Array.from(arguments);
+    let fork = args.shift();
+    if(fork instanceof Fork) fork = `fork_${fork.name}`;
+    logger.apply(this, [fork, ...args])
+}
 
 
 /**
@@ -12,74 +17,90 @@ const log = logger.bind(this, "fork");
  */
 const forks = {}
 
-// I want to rewrite this because I hate how it jumps around so fucking much.
-const runFork = ({handle = null, name = "nullname", fn, args = [], messageHandler = null}) => {
-    log(`${!!forks[name] ? "Reusing" : "Creating"} fork: "${name}"`);
+class Fork {
+    #name;
+    #fn;
+    #args;
+    #promise;
+    #promiseTriggers;
+    #handle;
+    #retVal;
+    #retValCache;
+    #messageHandlers;
 
-    // Create or reuse a (new) fork
-    let f = forks[name] ?? { // I'm being verbose for consistency in this obj
-        name: name,
-        fn: fn,
-        args: args,
-        promise: null,
-        promiseTriggers: [],
-        handle: handle,
-        retVal: undefined,
-        retValCache: [],
-        messageHandlers: !!messageHandler ? [messageHandler] : [],
-    };
-    if(!!forks[name]) { // Reusing, so fix the old vals
-        f.fn = fn;
-        f.args = args;
-        f.retValCache.push(f.retVal);
-        f.retVal = undefined;
-        if(!!messageHandler) f.messageHandlers.push(messageHandler);
+    constructor({name = "nullname", fn, args = [], messageHandler = null}) {
+        const self = this;
+
+        this.#name = name;
+
+        if(!fn) throw new Error("No function provided");
+        if(!["function", "string"].includes(typeof fn)) throw new Error("Function provided doesn't match String or Function");
+        this.#fn = fn.toString();
+        this.#args = args;
+        this.#retVal = undefined;
+        this.#retValCache = [];
+        this.#messageHandlers = !!messageHandler ? [messageHandler] : [];
+
+        this.#promiseTriggers = [];
+        this.#promise = new Promise((res, rej) => {self.#promiseTriggers.push({res, rej});});
+
+        this.#handle = fork(resolve(__dirname, "runner.js"), [name], {stdio: "inherit"});
+        this.#handle.on("message", this.#handleMessage.bind(this));
+        this.#handle.send(serialize({
+            name: this.#name,
+            fn: this.#fn,
+            args: this.#args
+        }));
     }
 
-    // Ensure that we should even run
-    if(!f.fn) throw new Error("No function provided to runFork");
-    f.fn = f.fn.toString();
-
-    // Create the promise
-    const prom = new Promise((res, rej) => {f.promiseTriggers.push({res, rej});})
-    f.promise = !f.promise ? prom : f.promise.then(() => prom);
-
-    // Create the fork handle and prepare the receiver
-    if(f.handle === null) {
-        f.handle = fork(resolve(__dirname, "runner.js"), [name], {stdio: "inherit"});
-        f.handle.on("message", (data) => {
-            try {
-                data = deserialize(data);
-                // Checking if {retVal: any} exists means we can make sure that we're actually receiving the retVal
-                if(f.promise.isPending && data.retVal !== undefined) {
-                    f.retVal = data.retVal;
-                    f.promiseTriggers.shift().res(data.retVal);
-                } else if(f.messageHandlers.length > 0) f.messageHandlers.forEach((mh) => mh(null, data));
-                // log(`Message received from fork "${name}"`);
-            } catch(e) {
-                log(`Error occured from fork "${name}"`, logger.types.ERROR);
-                log(e, logger.types.ERROR);
-                if(f.promise.isPending) f.promiseTriggers.shift().rej(e);
-                if(f.messageHandlers.length > 0) f.messageHandlers.forEach((mh) => mh(e, null));
-            }
-        });
+    reuse({fn, args, messageHandler = null}) {
+        if(this.#retVal !== undefined) {
+            this.#retValCache.unshift(this.#retVal);
+            this.#retVal = undefined;
+        }
+        if(!!fn) this.#fn = fn;
+        if(!!args) this.#args = args;
+        if(!!messageHandler) this.#messageHandlers.push(messageHandler);
+        const prom = new Promise((res, rej) => {this.#promiseTriggers.push({res, rej});})
+        this.#promise = this.#promise.then(() => prom);
+        this.#handle.send(serialize({
+            name: this.#name,
+            fn: this.#fn,
+            args: this.#args
+        }));
     }
-    log(`Sending message to fork "${name}"`);
-    f.handle.send(serialize({
-        name: f.name,
-        fn: f.fn,
-        args: f.args
-    }));
 
-    // Save and return the fork
-    return (forks[name] = f);
-};
-// I want to get rid of these and just pass around fork objects
-const getFork = (name) => forks[name];
-const deleteFork = (name) => delete forks[name];
+    kill(signal) {
+        this.#handle.kill(signal);
+    }
+
+    get name() {return this.#name;}
+    get promise() {return this.#promise;}
+    get retVal() {return this.#retVal;}
+    get retValCache() {return this.#retValCache;}
+    get isConnected() {return this.#handle.connected;}
+    // expose the handle or just a way to send a message?
+
+    #handleMessage(data) {
+        try {
+            data = deserialize(data);
+            // Checking if {retVal: any} exists means we can make sure that we're actually receiving the retVal
+            // BUG/SQUASHED: Could this introduce a race condition if the fork returns a message before we even send our data?
+            // No bug because we're looking for the property 'retVal' on the object, so unless something returns {retVal ...} we should be safe
+            if(this.#promise.isPending && data.retVal !== undefined) {
+                this.#retVal = data.retVal;
+                this.#promiseTriggers.shift().res(data.retVal);
+            } else if(this.#messageHandlers.length > 0) this.#messageHandlers.forEach((mh) => mh(null, data));
+        } catch(e) {
+            log(this, `Error`, logger.types.ERROR);
+            log(this, e.message ?? "No message given!", logger.types.ERROR);
+            log(this, e.stack ?? "No stack given!", logger.types.ERROR);
+            if(this.#promise.isPending) this.#promiseTriggers.shift().rej(e);
+            if(this.#messageHandlers.length > 0) this.#messageHandlers.forEach((mh) => mh(e, null));
+        }
+    }
+}
 
 module.exports = {
-    runFork,
-    getFork,
-    deleteFork,
+    Fork
 }
