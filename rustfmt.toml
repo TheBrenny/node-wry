@@ -1,3 +1,11 @@
 tab_spaces = 4
 edition = "2021"
 match_block_trailing_comma = true
+max_width = 65535
+fn_single_line = true
+single_line_if_else_max_width = 65535
+trailing_comma = "Vertical"
+where_single_line = true
+struct_lit_width = 150
+struct_variant_width = 150
+imports_layout = "Vertical"

@@ -10,8 +10,11 @@ const EventType = {
     "WindowCloseRequested": "windowCloseRequested",
     "WindowDestroyed": "windowDestroyed",
     "DroppedFile": "droppedFile",
+    "FileDropped": "droppedFile", // alias
     "HoveredFile": "hoveredFile",
+    "FileHovered": "hoveredFile", // alias
     "HoveredFileCancelled": "hoveredFileCancelled",
+    "FileHoveredCancelled": "hoveredFileCancelled", // alias
     "ReceivedImeText": "receivedImeText",
     "Focused": "focused",
     "KeyboardInput": "keyboardInput",

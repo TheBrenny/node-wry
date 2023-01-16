@@ -1,15 +1,19 @@
 const path = require("path");
+const fs = require("fs");
 const {WebView, EventType, addCustomEvent} = require("../");
+
+const html = fs.readFileSync(path.resolve(__dirname, "page.html"));
 
 let wv = new WebView({
     title: "Hello World! Form the code too!",
     center: true,
-    url: "https://html5test.com",
-    backgroundColor: "#000000",
+    // url: "https://html5test.com",
+    html: html,
+    backgroundColor: "#00000000",
     initializationScript: "console.log('Hello world!!')",
     icon: path.resolve(__dirname, "wry_logo.png"),
     defaultEventHandler: false,
-    // transparent: true,
+    transparent: true,
 });
 
 wv.addWindowEventListener(({event, data}) => {
@@ -19,9 +23,13 @@ wv.addWindowEventListener(({event, data}) => {
             process.exit(0);
         }
     };
-    if(event === "customEvent") {
-        console.log(`${event}: ${JSON.stringify(data)}`);
-    }
+
+    if([EventType.FileDropped, EventType.FileHovered].includes(event)) console.log(`Path: ${data.paths}`);
+
+    
+    // if(event === "customEvent") {
+    //     console.log(`${event}: ${JSON.stringify(data)}`);
+    // }
 });
 
 wv.run();

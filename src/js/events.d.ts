@@ -65,14 +65,14 @@ declare namespace Events {
         "event": EventType.DroppedFile,
         "data": {
             "windowId": String,
-            "path": String
+            "path": String[]
         }
     }
     interface HoveredFile {
         "event": EventType.HoveredFile,
         "data": {
             "windowId": String,
-            "path": String
+            "path": String[]
         }
     }
     interface HoveredFileCancelled {
@@ -624,8 +624,11 @@ export enum EventType {
     WindowCloseRequested = "windowCloseRequested",
     WindowDestroyed = "windowDestroyed",
     DroppedFile = "droppedFile",
+    FileDropped = "droppedFile", // alias
     HoveredFile = "hoveredFile",
+    FileHovered = "hoveredFile", // alias
     HoveredFileCancelled = "hoveredFileCancelled",
+    FileHoveredCancelled = "hoveredFileCancelled", // alias
     ReceivedImeText = "receivedImeText",
     Focused = "focused",
     KeyboardInput = "keyboardInput",

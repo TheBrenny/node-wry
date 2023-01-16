@@ -29,7 +29,7 @@ export interface WebViewSettings {
   url?: string
   theme?: string
   visible?: boolean
-  icon?: string
+  icon?: Array<number>
   acceptFirstMouse?: boolean
   navigationGestures?: boolean
   backgroundColor?: string
@@ -43,7 +43,7 @@ export interface WebViewSettings {
 }
 export type InternalWebView = WebView
 export class WebView {
-  constructor(settings?: WebViewSettings | undefined | null)
+  constructor(settingsObj?: WebViewSettings | undefined | null)
   get hash(): string
   run(callback: (data: String) => void): void
 }

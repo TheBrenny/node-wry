@@ -1,7 +1,7 @@
 require("get-promise-state"); // I'm not sure if this plays nicely with everything else...
 
+const fs = require("fs");
 const path = require("path");
-const {serialize} = require("./serialisation");
 const bindings = require('./bindings');
 const logger = require("./logger");
 const events = require("./events");
@@ -20,9 +20,14 @@ class WebView {
 
     constructor(settings = {}) {
         log("Creating WebView.", logger.types.INFO);
+        if(!!settings?.icon) settings.icon = path.resolve(settings.icon);
+        if(!!settings?.html && settings.html instanceof Buffer) settings.html = settings.html.toString();
+        if(!!settings?.icon && typeof settings.icon === "string") {
+            let p = path.resolve(settings.icon);
+            settings.icon = Array.from(fs.readFileSync(p));
+        }
         this.#settings = settings ?? {};
 
-        if(!!settings?.icon) settings.icon = path.resolve(settings.icon);
         this.#build();
 
         debugWebview = this;
@@ -31,7 +36,7 @@ class WebView {
     get id() {return this.#id;}
     get debugWebviewFork() {return this.#webviewFork;}
     async getTitle() {
-        
+
     }
 
     #build() {
@@ -64,7 +69,6 @@ class WebView {
     async run() {
         if(this.#webviewFork.promise.isPending) await this.#webviewFork.promise;
 
-        // `type` is either "message" or "error"
         const messageHandler = (error, event) => {
             if(!error) {
                 if(!!event && events.isEvent(event)) this.#handleEvent(event);
@@ -90,23 +94,6 @@ class WebView {
             log(`Webview already closed!`, logger.types.WARN);
         }
     }
-
-    // TBH: I don't think this actually gets used.
-    // Also: I don't think it even *can* get serialised. We can ser the settings, but not the fork...
-    //
-    // toJSON() {
-    //     let m = {
-    //         settings: serialize(this.#settings),
-    //         webviewFork: serialize(this.#webviewFork),
-    //     };
-    //     return `WebView{${serialize(m)}}`;
-    // }
-
-    // static fromJSON(data) {
-    //     let {settings, webviewFork} = JSON.parse(data.substring("WebView{".length, data.length - 1));
-    //     let wv = new WebView(settings);
-    //     wv.#webviewFork = webviewFork;
-    // }
 }
 
 module.exports = {

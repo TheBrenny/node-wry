@@ -1,12 +1,16 @@
-use std::{
-    time::{Instant, SystemTime, UNIX_EPOCH},
-};
+use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
 use crate::hash;
 
 use serde_json::json;
 
-use wry::application::event::{DeviceEvent, Event, MouseScrollDelta, StartCause, WindowEvent};
+use wry::{
+    application::{
+        event::{DeviceEvent, Event, MouseScrollDelta, StartCause, WindowEvent},
+        window::Window,
+    },
+    webview::FileDropEvent,
+};
 
 pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value {
     #[allow(unused_assignments)]
@@ -17,23 +21,12 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
         Event::NewEvents(startCause) => match startCause {
             StartCause::Init => eventName = "init",
             StartCause::Poll => eventName = "poll",
-            StartCause::ResumeTimeReached {
-                start,
-                requested_resume,
-                ..
-            } => {
+            StartCause::ResumeTimeReached { start, requested_resume, .. } => {
                 eventName = "resumeTimeReached";
                 data.insert("start".to_string(), json!(instantToMillis(start)));
-                data.insert(
-                    "requestedResumeTime".to_string(),
-                    json!(instantToMillis(requested_resume)),
-                );
+                data.insert("requestedResumeTime".to_string(), json!(instantToMillis(requested_resume)));
             },
-            StartCause::WaitCancelled {
-                start,
-                requested_resume,
-                ..
-            } => {
+            StartCause::WaitCancelled { start, requested_resume, .. } => {
                 eventName = "waitCancelled";
                 data.insert("start".to_string(), json!(instantToMillis(start)));
                 data.insert(
@@ -46,9 +39,7 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
             },
             &_ => eventName = "newEventNotImplemented",
         },
-        Event::WindowEvent {
-            window_id, event, ..
-        } => {
+        Event::WindowEvent { window_id, event, .. } => {
             data.insert("windowId".to_string(), json!(hash(window_id)));
             match event {
                 WindowEvent::Resized(size) => {
@@ -65,11 +56,11 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
                 WindowEvent::Destroyed => eventName = "windowDestroyed",
                 WindowEvent::DroppedFile(path) => {
                     eventName = "droppedFile";
-                    data.insert("path".to_string(), json!(path));
+                    data.insert("paths".to_string(), json!([path]));
                 },
                 WindowEvent::HoveredFile(path) => {
                     eventName = "hoveredFile";
-                    data.insert("path".to_string(), json!(path));
+                    data.insert("paths".to_string(), json!([path]));
                 },
                 WindowEvent::HoveredFileCancelled => eventName = "hoveredFileCancelled",
                 WindowEvent::ReceivedImeText(text) => {
@@ -80,25 +71,14 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
                     eventName = "focused";
                     data.insert("focused".to_string(), json!(flag));
                 },
-                WindowEvent::KeyboardInput {
-                    device_id,
-                    event,
-                    is_synthetic,
-                    ..
-                } => {
+                WindowEvent::KeyboardInput { device_id, event, is_synthetic, .. } => {
                     eventName = "keyboardInput";
                     data.insert("deviceId".to_string(), json!(hash(device_id)));
                     data.insert("isSynthetic".to_string(), json!(is_synthetic));
 
-                    data.insert(
-                        "physicalKey".to_string(),
-                        json!(format!("{:?}", event.physical_key)),
-                    );
+                    data.insert("physicalKey".to_string(), json!(format!("{:?}", event.physical_key)));
                     data.insert("text".to_string(), json!(event.text.unwrap_or("")));
-                    data.insert(
-                        "location".to_string(),
-                        json!(format!("{:?}", event.location)),
-                    );
+                    data.insert("location".to_string(), json!(format!("{:?}", event.location)));
                     data.insert("state".to_string(), json!(format!("{:?}", event.state)));
                     data.insert("repeat".to_string(), json!(event.repeat));
                 },
@@ -110,11 +90,7 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
                     data.insert("super".to_string(), json!(modState.super_key()));
                 },
                 #[allow(deprecated)]
-                WindowEvent::CursorMoved {
-                    device_id,
-                    position,
-                    modifiers,
-                } => {
+                WindowEvent::CursorMoved { device_id, position, modifiers } => {
                     eventName = "cursorMoved";
                     data.insert("deviceId".to_string(), json!(hash(device_id)));
                     data.insert("x".to_string(), json!(position.x));
@@ -138,12 +114,7 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
                     data.insert("deviceId".to_string(), json!(hash(device_id)));
                 },
                 #[allow(deprecated)]
-                WindowEvent::MouseWheel {
-                    device_id,
-                    delta,
-                    phase,
-                    modifiers,
-                } => {
+                WindowEvent::MouseWheel { device_id, delta, phase, modifiers } => {
                     eventName = "windowMouseWheel";
                     data.insert("deviceId".to_string(), json!(hash(device_id)));
                     data.insert(
@@ -173,12 +144,7 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
                     );
                 },
                 #[allow(deprecated)]
-                WindowEvent::MouseInput {
-                    device_id,
-                    state,
-                    button,
-                    modifiers,
-                } => {
+                WindowEvent::MouseInput { device_id, state, button, modifiers } => {
                     eventName = "mouseInput";
                     data.insert("deviceId".to_string(), json!(hash(device_id)));
                     data.insert("state".to_string(), json!(format!("{:?}", state)));
@@ -193,21 +159,13 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
                         }),
                     );
                 },
-                WindowEvent::TouchpadPressure {
-                    device_id,
-                    pressure,
-                    stage,
-                } => {
+                WindowEvent::TouchpadPressure { device_id, pressure, stage } => {
                     eventName = "touchpadPressure";
                     data.insert("deviceId".to_string(), json!(hash(device_id)));
                     data.insert("pressure".to_string(), json!(pressure));
                     data.insert("stage".to_string(), json!(stage));
                 },
-                WindowEvent::AxisMotion {
-                    device_id,
-                    axis,
-                    value,
-                } => {
+                WindowEvent::AxisMotion { device_id, axis, value } => {
                     eventName = "axisMotion";
                     data.insert("deviceId".to_string(), json!(hash(device_id)));
                     data.insert("axis".to_string(), json!(axis));
@@ -233,10 +191,7 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
                         }),
                     );
                 },
-                WindowEvent::ScaleFactorChanged {
-                    scale_factor,
-                    new_inner_size,
-                } => {
+                WindowEvent::ScaleFactorChanged { scale_factor, new_inner_size } => {
                     eventName = "scaleFactorChanged";
                     data.insert("scaleFactor".to_string(), json!(scale_factor));
                     data.insert(
@@ -249,18 +204,13 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
                 },
                 WindowEvent::ThemeChanged(theme) => {
                     eventName = "themeChanged";
-                    data.insert(
-                        "theme".to_string(),
-                        json!(format!("{:?}", theme).to_lowercase()),
-                    );
+                    data.insert("theme".to_string(), json!(format!("{:?}", theme).to_lowercase()));
                 },
                 WindowEvent::DecorationsClick => eventName = "decorationsClick",
                 &_ => eventName = "windowNotImplemented",
             }
         },
-        Event::DeviceEvent {
-            device_id, event, ..
-        } => {
+        Event::DeviceEvent { device_id, event, .. } => {
             data.insert("deviceId".to_string(), json!(hash(device_id)));
             match event {
                 DeviceEvent::Added => eventName = "deviceAdded",
@@ -321,15 +271,10 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
             }
         },
         Event::UserEvent(event) => {
-            eventName = "userEvent";
-            data.insert("event".to_string(), json!(event));
+            eventName = event["event"].as_str().unwrap_or("userEvent");
+            data = event["data"].as_object().unwrap_or(&serde_json::Map::new()).clone();
         },
-        Event::MenuEvent {
-            window_id,
-            menu_id,
-            origin,
-            ..
-        } => {
+        Event::MenuEvent { window_id, menu_id, origin, .. } => {
             eventName = "menuEvent";
             data.insert(
                 "windowId".to_string(),
@@ -341,13 +286,7 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
             data.insert("menuId".to_string(), json!(menu_id.0));
             data.insert("origin".to_string(), json!(format!("{:?}", origin)));
         },
-        Event::TrayEvent {
-            id,
-            bounds,
-            event,
-            position,
-            ..
-        } => {
+        Event::TrayEvent { id, bounds, event, position, .. } => {
             eventName = "trayEvent";
             data.insert("id".to_string(), json!(id.0));
             data.insert(
@@ -390,14 +329,34 @@ pub fn eventToJson(wryEvent: &Event<'_, serde_json::Value>) -> serde_json::Value
     })
 }
 
-fn instantToMillis(instant: &Instant) -> u32 {
-    let since_the_epoch = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("Time went backwards");
-    let now = Instant::now();
-    (since_the_epoch - (now - *instant))
-        .as_millis()
-        .try_into()
-        .unwrap_or(0)
+pub fn dropEventToJson(window: &Window, event: &FileDropEvent) -> serde_json::Value {
+    #[allow(unused_mut, unused_assignments)]
+    let mut eventName: &str = "unknown";
+    let mut data = serde_json::Map::new();
+
+    data.insert("windowId".to_string(), json!(hash(window.id())));
+
+    match event {
+        FileDropEvent::Hovered(paths) => {
+            eventName = "hoveredFile";
+            data.insert("paths".to_string(), json!(paths));
+        },
+        FileDropEvent::Dropped(paths) => {
+            eventName = "droppedFile";
+            data.insert("paths".to_string(), json!(paths));
+        },
+        FileDropEvent::Cancelled => eventName = "hoveredFileCancelled",
+        &_ => eventName = "unknown",
+    }
+
+    json!({
+        "event": eventName,
+        "data": data
+    })
 }
 
+fn instantToMillis(instant: &Instant) -> u32 {
+    let since_the_epoch = SystemTime::now().duration_since(UNIX_EPOCH).expect("Time went backwards");
+    let now = Instant::now();
+    (since_the_epoch - (now - *instant)).as_millis().try_into().unwrap_or(0)
+}

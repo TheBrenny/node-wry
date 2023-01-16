@@ -22,7 +22,7 @@ function sendMessageCallback(message) {
         process.send(message);
     } catch(e) {
         log("Error", logger.types.ERROR);
-        log(e, logger.types.ERROR);
+        log(e.stack, logger.types.ERROR);
     }
 }
 global.sendMessageCallback = sendMessageCallback;
