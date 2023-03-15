@@ -23,8 +23,8 @@ use events::*;
 #[macro_use]
 extern crate napi_derive;
 
-fn colorTupleFromString(color: String) -> (u8, u8, u8, u8) {
-    let mut color = color;
+fn colorTupleFromString(color: &String) -> (u8, u8, u8, u8) {
+    let mut color = color.to_string();
     if color.starts_with("#") {
         color = color.trim_start_matches("#").to_string();
     }
@@ -63,57 +63,55 @@ impl InternalWebView {
         let event_proxy = event_loop.create_proxy();
         let mut _wb = WindowBuilder::new();
 
-        if let Some(settingsObj) = settingsObj.clone() {
-            if let Some(alwaysOnLayer) = settingsObj.alwaysOnLayer {
+        if let Some(settingsObj) = &settingsObj {
+            if let Some(alwaysOnLayer) = &settingsObj.alwaysOnLayer {
                 _wb = _wb.with_always_on_bottom(alwaysOnLayer == "bottom");
-                _wb = _wb.with_always_on_bottom(alwaysOnLayer == "top");
+                _wb = _wb.with_always_on_top(alwaysOnLayer == "top");
             }
-            if let Some(decorations) = settingsObj.decorations {
-                _wb = _wb.with_decorations(decorations);
+            if let Some(decorations) = &settingsObj.decorations {
+                _wb = _wb.with_decorations(*decorations);
             }
-            if let Some(fullscreen) = settingsObj.fullscreen {
-                if fullscreen {
-                    _wb = _wb.with_fullscreen(Some(Fullscreen::Borderless(None)));
-                }
+            if let Some(true) = &settingsObj.fullscreen {
+                _wb = _wb.with_fullscreen(Some(Fullscreen::Borderless(None)));
             }
-            if let Some(maximizable) = settingsObj.maximizable {
-                _wb = _wb.with_maximizable(maximizable);
+            if let Some(maximizable) = &settingsObj.maximizable {
+                _wb = _wb.with_maximizable(*maximizable);
             }
-            if let Some(maximized) = settingsObj.maximized {
-                _wb = _wb.with_maximized(maximized);
+            if let Some(maximized) = &settingsObj.maximized {
+                _wb = _wb.with_maximized(*maximized);
             }
-            if let Some(minimizable) = settingsObj.minimizable {
-                _wb = _wb.with_minimizable(minimizable);
+            if let Some(minimizable) = &settingsObj.minimizable {
+                _wb = _wb.with_minimizable(*minimizable);
             }
-            if let Some(resizable) = settingsObj.resizable {
-                _wb = _wb.with_resizable(resizable);
+            if let Some(resizable) = &settingsObj.resizable {
+                _wb = _wb.with_resizable(*resizable);
             }
-            if let Some(theme) = settingsObj.theme {
-                _wb = _wb.with_theme(getTheme(theme));
+            if let Some(theme) = &settingsObj.theme {
+                _wb = _wb.with_theme(getTheme(theme.to_string()));
             }
-            if let Some(title) = settingsObj.title {
+            if let Some(title) = &settingsObj.title {
                 _wb = _wb.with_title(title);
             }
-            if let Some(transparent) = settingsObj.transparent {
-                _wb = _wb.with_transparent(transparent);
+            if let Some(transparent) = &settingsObj.transparent {
+                _wb = _wb.with_transparent(*transparent);
             }
             // TODO: Implement this -- you'll need to NAPI the wry::application::menu::MenuBar tho
             // .with_menu()
-            if let Some(minSize) = settingsObj.minSize {
+            if let Some(minSize) = &settingsObj.minSize {
                 _wb = _wb.with_min_inner_size(LogicalSize::new(minSize.width, minSize.height));
             }
-            if let Some(size) = settingsObj.size {
+            if let Some(size) = &settingsObj.size {
                 _wb = _wb.with_inner_size(LogicalSize::new(size.width, size.height));
             }
-            if let Some(maxSize) = settingsObj.maxSize {
+            if let Some(maxSize) = &settingsObj.maxSize {
                 _wb = _wb.with_max_inner_size(LogicalSize::new(maxSize.width, maxSize.height));
             }
-            if let Some(position) = settingsObj.position {
+            if let Some(position) = &settingsObj.position {
                 _wb = _wb.with_position(PhysicalPosition::new(position.x, position.y));
             }
 
             let icon: Icon;
-            if let Some(iconBuffer) = settingsObj.icon {
+            if let Some(iconBuffer) = &settingsObj.icon {
                 let img = image::load_from_memory(&iconBuffer).unwrap();
                 let imgW = img.width();
                 let imgH = img.height();
@@ -128,9 +126,9 @@ impl InternalWebView {
 
         // Window Centering
         let mut center = true;
-        if let Some(settingsObj) = settingsObj.clone() {
-            if let Some(c) = settingsObj.center {
-                center = c;
+        if let Some(settingsObj) = &settingsObj {
+            if let Some(c) = &settingsObj.center {
+                center = *c;
             }
         }
         if center {
@@ -143,41 +141,41 @@ impl InternalWebView {
         // Web View Building
         let mut _wvb = WebViewBuilder::new(_window).unwrap();
         let mut useDefaultEventHandler = true;
-        if let Some(settingsObj) = settingsObj.clone() {
-            if let Some(acceptFirstMouse) = settingsObj.acceptFirstMouse {
-                _wvb = _wvb.with_accept_first_mouse(acceptFirstMouse);
+        if let Some(settingsObj) = &settingsObj {
+            if let Some(acceptFirstMouse) = &settingsObj.acceptFirstMouse {
+                _wvb = _wvb.with_accept_first_mouse(*acceptFirstMouse);
             }
-            if let Some(navigationGestures) = settingsObj.navigationGestures {
-                _wvb = _wvb.with_back_forward_navigation_gestures(navigationGestures);
+            if let Some(navigationGestures) = &settingsObj.navigationGestures {
+                _wvb = _wvb.with_back_forward_navigation_gestures(*navigationGestures);
             }
-            if let Some(backgroundColor) = settingsObj.backgroundColor {
+            if let Some(backgroundColor) = &settingsObj.backgroundColor {
                 _wvb = _wvb.with_background_color(colorTupleFromString(backgroundColor));
             }
-            if let Some(clipboard) = settingsObj.clipboard {
-                _wvb = _wvb.with_clipboard(clipboard);
+            if let Some(clipboard) = &settingsObj.clipboard {
+                _wvb = _wvb.with_clipboard(*clipboard);
             }
-            if let Some(devtools) = settingsObj.devtools {
-                _wvb = _wvb.with_devtools(devtools);
+            if let Some(devtools) = &settingsObj.devtools {
+                _wvb = _wvb.with_devtools(*devtools);
             }
-            if let Some(hotkeysZoom) = settingsObj.hotkeysZoom {
-                _wvb = _wvb.with_hotkeys_zoom(hotkeysZoom);
+            if let Some(hotkeysZoom) = &settingsObj.hotkeysZoom {
+                _wvb = _wvb.with_hotkeys_zoom(*hotkeysZoom);
             }
-            if let Some(initializationScript) = settingsObj.initializationScript {
+            if let Some(initializationScript) = &settingsObj.initializationScript {
                 _wvb = _wvb.with_initialization_script(initializationScript.as_str());
             }
-            if let Some(transparent) = settingsObj.transparent {
-                _wvb = _wvb.with_transparent(transparent);
+            if let Some(transparent) = &settingsObj.transparent {
+                _wvb = _wvb.with_transparent(*transparent);
             }
-            if let Some(useragent) = settingsObj.useragent {
+            if let Some(useragent) = &settingsObj.useragent {
                 _wvb = _wvb.with_user_agent(useragent.as_str());
             }
-            if let Some(visible) = settingsObj.visible {
-                _wvb = _wvb.with_visible(visible);
+            if let Some(visible) = &settingsObj.visible {
+                _wvb = _wvb.with_visible(*visible);
             }
-            if let Some(deh) = settingsObj.defaultEventHandler {
-                useDefaultEventHandler = deh;
+            if let Some(deh) = &settingsObj.defaultEventHandler {
+                useDefaultEventHandler = *deh;
             }
-            if let Some(true) = settingsObj.nativeFileHandler {
+            if let Some(true) = &settingsObj.nativeFileHandler {
                 let ep = event_proxy.clone();
                 _wvb = _wvb.with_file_drop_handler(move |window, data| {
                     let event = dropEventToJson(&window, &data);
@@ -185,16 +183,14 @@ impl InternalWebView {
                     false // Returning true will block the OS default behaviour.
                 });
             }
-            if let Some(true) = settingsObj.ipcHandler {
+            if let Some(true) = &settingsObj.ipcHandler {
                 let ep = event_proxy.clone();
                 _wvb = _wvb.with_ipc_handler(move |window, data| {
                     let event = ipcEventToJson(&window, &data);
                     ep.send_event(event).unwrap();
                 });
             }
-            
         }
-        
 
         // TODO: These are all things that I'll get to eventually
         // MAYBE: For the Handlers, the rust code will register a handler, and it'll check if one was passed on init and then invoke that using Napi casts?
@@ -208,11 +204,11 @@ impl InternalWebView {
 
         // Set HTML/URL
         let mut setContent = false;
-        if let Some(settingsObj) = settingsObj.clone() {
-            if let Some(url) = settingsObj.url {
+        if let Some(settingsObj) = &settingsObj {
+            if let Some(url) = &settingsObj.url {
                 _wvb = _wvb.with_url(url.as_str()).expect("The passed URL is invalid!");
                 setContent = true;
-            } else if let Some(html) = settingsObj.html {
+            } else if let Some(html) = &settingsObj.html {
                 _wvb = _wvb.with_html(html.as_str()).expect("The passed HTML is invalid!");
                 setContent = true;
             }
@@ -224,8 +220,8 @@ impl InternalWebView {
         let webview = _wvb.build().unwrap();
 
         let mut devtools = cfg!(debug_assertions);
-        if let Some(settingsObj) = settingsObj.clone() {
-            if let Some(true) = settingsObj.devtools {
+        if let Some(settingsObj) = &settingsObj {
+            if let Some(true) = &settingsObj.devtools {
                 devtools = true;
             }
         }
@@ -234,9 +230,9 @@ impl InternalWebView {
         }
 
         let mut visible = true;
-        if let Some(settingsObj) = settingsObj.clone() {
-            if let Some(v) = settingsObj.visible {
-                visible = v;
+        if let Some(settingsObj) = &settingsObj {
+            if let Some(v) = &settingsObj.visible {
+                visible = *v;
             }
         }
         webview.window().set_visible(visible);
