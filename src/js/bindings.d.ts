@@ -40,6 +40,8 @@ export interface WebViewSettings {
   initializationScript?: string
   useragent?: string
   defaultEventHandler?: boolean
+  nativeFileHandler?: boolean
+  ipcHandler?: boolean
 }
 export type InternalWebView = WebView
 export class WebView {

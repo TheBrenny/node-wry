@@ -370,6 +370,10 @@ declare namespace Events {
         "event": EventType.LoopDestroyed,
         "data": {}
     }
+    interface IPCMessage {
+        "event": EventType.IPCMessage,
+        "data": Object
+    }
 }
 
 declare enum KeyCode {
@@ -611,7 +615,7 @@ declare enum TrayEvent {
     "DoubleClick"
 }
 
-// TODO: Maybe there's a way that we can generate this EventType enum?
+// MAYBE: Maybe there's a way that we can generate this EventType enum?
 export enum EventType {
     Unknown = "unknown",
     Init = "init",
@@ -663,6 +667,7 @@ export enum EventType {
     RedrawRequested = "redrawRequested",
     RedrawEventsCleared = "redrawEventsCleared",
     LoopDestroyed = "loopDestroyed",
+    IPCMessage = "ipcMessage"
 }
 
 export type WebViewEvent =
@@ -713,7 +718,8 @@ export type WebViewEvent =
     Events.MainEventsCleared |
     Events.RedrawRequested |
     Events.RedrawEventsCleared |
-    Events.LoopDestroyed;
+    Events.LoopDestroyed |
+    Events.IPCMessage;
 
 export function isEvent(obj: Object): boolean;
 export function addCustomEvent(eventName: String): void;

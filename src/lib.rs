@@ -177,20 +177,30 @@ impl InternalWebView {
             if let Some(deh) = settingsObj.defaultEventHandler {
                 useDefaultEventHandler = deh;
             }
+            if let Some(true) = settingsObj.nativeFileHandler {
+                let ep = event_proxy.clone();
+                _wvb = _wvb.with_file_drop_handler(move |window, data| {
+                    let event = dropEventToJson(&window, &data);
+                    ep.send_event(event).unwrap();
+                    false // Returning true will block the OS default behaviour.
+                });
+            }
+            if let Some(true) = settingsObj.ipcHandler {
+                let ep = event_proxy.clone();
+                _wvb = _wvb.with_ipc_handler(move |window, data| {
+                    let event = ipcEventToJson(&window, &data);
+                    ep.send_event(event).unwrap();
+                });
+            }
+            
         }
-
-        _wvb = _wvb.with_file_drop_handler(move |window, data| {
-            let event = dropEventToJson(&window, &data);
-            event_proxy.send_event(event).unwrap();
-            false // Returning true will block the OS default behaviour.
-        });
+        
 
         // TODO: These are all things that I'll get to eventually
         // MAYBE: For the Handlers, the rust code will register a handler, and it'll check if one was passed on init and then invoke that using Napi casts?
         //   // .with_custom_protocol()            // I have no idea what to do here...
         //   // .with_download_completed_handler() // No idea here either
         //   // .with_download_started_handler()   // Or here
-        //   // .with_ipc_handler()                // More handlers
         //   // .with_navigation_handler()         // More handlers
         //   // .with_new_window_req_handler()     // More handlers
         //   // .with_web_context()                // I don't even know what the heck this one is!

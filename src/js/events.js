@@ -49,6 +49,7 @@ const EventType = {
     "RedrawRequested": "redrawRequested",
     "RedrawEventsCleared": "redrawEventsCleared",
     "LoopDestroyed": "loopDestroyed",
+    "IPCMessage": "ipcMessage",
 };
 
 const eventTypes = Object.values(EventType);

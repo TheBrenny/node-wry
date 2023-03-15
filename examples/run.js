@@ -14,6 +14,7 @@ let wv = new WebView({
     icon: path.resolve(__dirname, "wry_logo.png"),
     defaultEventHandler: false,
     transparent: true,
+    ipcHandler: true,
 });
 
 wv.addWindowEventListener(({event, data}) => {
@@ -26,10 +27,7 @@ wv.addWindowEventListener(({event, data}) => {
 
     if([EventType.FileDropped, EventType.FileHovered].includes(event)) console.log(`Path: ${data.paths}`);
 
-    
-    // if(event === "customEvent") {
-    //     console.log(`${event}: ${JSON.stringify(data)}`);
-    // }
+    if(event === EventType.IPCMessage) console.log(`IPC Message: ${data.windowId}, ${data.message}`)
 });
 
 wv.run();

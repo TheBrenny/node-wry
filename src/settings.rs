@@ -43,4 +43,6 @@ pub struct NodeWebViewSettings {
     pub initializationScript: Option<String>,
     pub useragent: Option<String>,
     pub defaultEventHandler: Option<bool>,
+    pub nativeFileHandler: Option<bool>,
+    pub ipcHandler: Option<bool>,
 }

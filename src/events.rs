@@ -355,8 +355,22 @@ pub fn dropEventToJson(window: &Window, event: &FileDropEvent) -> serde_json::Va
     })
 }
 
+pub fn ipcEventToJson(window: &Window, data: &String) -> serde_json::Value {
+    #[allow(unused_mut, unused_assignments)]
+    let mut eventName: &str = "ipcMessage";
+    let mut eventData = serde_json::Map::new();
+
+    eventData.insert("windowId".to_string(), json!(hash(window.id())));
+    eventData.insert("message".to_string(), json!(data));
+
+    json!({
+        "event": eventName,
+        "data": eventData
+    })
+}
+
 fn instantToMillis(instant: &Instant) -> u32 {
-    let since_the_epoch = SystemTime::now().duration_since(UNIX_EPOCH).expect("Time went backwards");
+    let since_the_epoch = SystemTime::now().duration_since(UNIX_EPOCH).expect("Time should go forward!");
     let now = Instant::now();
     (since_the_epoch - (now - *instant)).as_millis().try_into().unwrap_or(0)
 }

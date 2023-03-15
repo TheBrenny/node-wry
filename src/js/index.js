@@ -76,7 +76,7 @@ class WebView {
             }
             if(!!error) log(`Error in message handler: ${error}`, logger.types.ERROR);
         };
-        this.#webviewFork.reuse({ // We probably don't need to re-set this, but I will anyway
+        this.#webviewFork.reuse({
             fn: () => global.wv.run(global.sendMessageCallback),
             args: [],
             messageHandler: messageHandler
