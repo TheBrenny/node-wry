@@ -1,3 +1,5 @@
+use napi::JsFunction;
+
 #[derive(Clone)]
 #[napi(object)]
 pub struct Size {
@@ -11,7 +13,7 @@ pub struct Position {
     pub y: f64,
 }
 
-#[derive(Clone)]
+// #[derive(Clone)]
 #[napi(js_name = "WebViewSettings", object)]
 pub struct NodeWebViewSettings {
     pub title: Option<String>,
@@ -36,7 +38,7 @@ pub struct NodeWebViewSettings {
     pub navigationGestures: Option<bool>,
     pub backgroundColor: Option<String>,
     pub clipboard: Option<bool>,
-    // pub customProtocol: Option<String>,
+    // pub customProtocol: Option<Vec<String>>,
     pub devtools: Option<bool>,
     pub hotkeysZoom: Option<bool>,
     pub html: Option<String>,
@@ -44,5 +46,7 @@ pub struct NodeWebViewSettings {
     pub useragent: Option<String>,
     pub defaultEventHandler: Option<bool>,
     pub nativeFileHandler: Option<bool>,
+    #[napi(ts_type = "newWindowRequestHandler: (uri: String) => boolean")]
+    pub newWindowRequestHandler: Option<JsFunction>,
     pub ipcHandler: Option<bool>,
 }

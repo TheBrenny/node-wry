@@ -10,11 +10,14 @@ let wv = new WebView({
     // url: "https://html5test.com",
     html: html,
     backgroundColor: "#00000000",
-    initializationScript: "console.log('Hello world!!')",
+    initializationScript: "(() => {})()",
     icon: path.resolve(__dirname, "wry_logo.png"),
     defaultEventHandler: false,
     transparent: true,
     ipcHandler: true,
+    newWindowRequestHandler: (uri) => {
+        return uri.includes("google");
+    }
 });
 
 wv.addWindowEventListener(({event, data}) => {

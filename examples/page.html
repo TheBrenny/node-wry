@@ -1,77 +1,90 @@
 <!DOCTYPE html>
 <html lang=en>
-<head>
-  <title>Demo: Drag and Drop files</title>
-  <!-- 
-    This example demonstrates using the HTML Drag and Drop's DataTransfer
-    and DataTransferItemList interfaces to drag files from the platform's
-    file manger and drop them in an HTML document.
-  -->
-  <style>
-    div {
-      margin: 0em;
-      padding: 2em;
-    }
-    #drop_zone {
-      border: 5px solid blue;
-      width:  200px;
-      height: 100px;
-    }
-  </style>
-</head>
-<body>
-  <h1>Drag and drop files</h1>
-  
-  <div id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
-    <p>Drag one or more files to this Drop Zone ...</p>
-  </div>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Demo: Drag and Drop files</title>
+        <style>
+            div {
+                margin: 0em;
+                padding: 2em;
+            }
 
-  <script type="text/javascript">
-  
-    function dragOverHandler(ev) {
-      console.log('File(s) in drop zone');
+            #drop_zone {
+                border: 5px solid blue;
+                width: 200px;
+                height: 100px;
+            }
 
-      // Prevent default behavior (Prevent file from being opened)
-      ev.preventDefault();
-    }
+            .popupMaker {
+                width: 200px;
+                height: 30px;
+                background: green;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Drag and drop files</h1>
 
-    function dropHandler(ev) {
-      console.log('File(s) dropped');
+        <div id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
+            <p>Drag one or more files to this Drop Zone ...</p>
+        </div>
 
-      // Prevent default behavior (Prevent file from being opened)
-      ev.preventDefault();
+        <div class="popupMaker" target="https://google.com"></div>
+        <div class="popupMaker" target="https://bing.com"></div>
 
-      if (ev.dataTransfer.items) {
-        // Use DataTransferItemList interface to access the file(s)
-        for (var i = 0; i < ev.dataTransfer.items.length; i++) {
-          // If dropped items aren't files, reject them
-          if (ev.dataTransfer.items[i].kind === 'file') {
-            var file = ev.dataTransfer.items[i].getAsFile();
-            console.log('... file[' + i + '].name = ' + file.name);
-          }
-        }
-      } else {
-        // Use DataTransfer interface to access the file(s)
-        for (var i = 0; i < ev.dataTransfer.files.length; i++) {
-          console.log('... file[' + i + '].name = ' + ev.dataTransfer.files[i].name);
-        }
-      }
+        <script type="text/javascript">
 
-      // Pass event to removeDragData for cleanup
-      removeDragData(ev)
-    }
+            function dragOverHandler(ev) {
+                console.log('File(s) in drop zone');
 
-    function removeDragData(ev) {
-      console.log('Removing drag data')
+                // Prevent default behavior (Prevent file from being opened)
+                ev.preventDefault();
+            }
 
-      if (ev.dataTransfer.items) {
-        // Use DataTransferItemList interface to remove the drag data
-        ev.dataTransfer.items.clear();
-      } else {
-        // Use DataTransfer interface to remove the drag data
-        ev.dataTransfer.clearData();
-      }
-    }
-  </script>
-</body>
+            function dropHandler(ev) {
+                console.log('File(s) dropped');
+
+                // Prevent default behavior (Prevent file from being opened)
+                ev.preventDefault();
+
+                if(ev.dataTransfer.items) {
+                    // Use DataTransferItemList interface to access the file(s)
+                    for(var i = 0; i < ev.dataTransfer.items.length; i++) {
+                        // If dropped items aren't files, reject them
+                        if(ev.dataTransfer.items[i].kind === 'file') {
+                            var file = ev.dataTransfer.items[i].getAsFile();
+                            console.log('... file[' + i + '].name = ' + file.name);
+                        }
+                    }
+                } else {
+                    // Use DataTransfer interface to access the file(s)
+                    for(var i = 0; i < ev.dataTransfer.files.length; i++) {
+                        console.log('... file[' + i + '].name = ' + ev.dataTransfer.files[i].name);
+                    }
+                }
+
+                // Pass event to removeDragData for cleanup
+                removeDragData(ev)
+            }
+
+            function removeDragData(ev) {
+                console.log('Removing drag data')
+
+                if(ev.dataTransfer.items) {
+                    // Use DataTransferItemList interface to remove the drag data
+                    ev.dataTransfer.items.clear();
+                } else {
+                    // Use DataTransfer interface to remove the drag data
+                    ev.dataTransfer.clearData();
+                }
+            }
+
+            document.querySelectorAll(".popupMaker").forEach(el => {
+                el.addEventListener("click", function (e) {
+                    window.open(e.target.attributes["target"].value, "target", "scrollbars=no,status=no,location=no,toolbar=no,menubar=no");
+                });
+            });  
+        </script>
+    </body>
 </html>

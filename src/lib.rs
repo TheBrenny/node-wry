@@ -1,8 +1,13 @@
 #![deny(clippy::all)]
 #![allow(non_snake_case)]
 
-use std::hash::{Hash, Hasher};
+use std::{
+    cell::Cell,
+    hash::{Hash, Hasher},
+    rc::Rc,
+};
 
+use napi::threadsafe_function::{ThreadSafeCallContext, ThreadsafeFunction, ThreadsafeFunctionCallMode};
 use wry::{
     application::{
         dpi::{LogicalSize, PhysicalPosition},
@@ -56,7 +61,7 @@ pub struct InternalWebView {
 
 #[napi]
 impl InternalWebView {
-    #[napi(constructor)]
+    #[napi(factory)]
     pub fn new(settingsObj: Option<NodeWebViewSettings>) -> Self {
         // Window Building
         let event_loop = EventLoop::<serde_json::Value>::with_user_event();
@@ -188,6 +193,25 @@ impl InternalWebView {
                 _wvb = _wvb.with_ipc_handler(move |window, data| {
                     let event = ipcEventToJson(&window, &data);
                     ep.send_event(event).unwrap();
+                });
+            }
+            if let Some(winReqHandler) = &settingsObj.newWindowRequestHandler {
+                let tsfn: Result<ThreadsafeFunction<String>, _> = winReqHandler.create_threadsafe_function(1, |ctx: ThreadSafeCallContext<String>| {
+                    let r = ctx.env.create_string_from_std(ctx.value).map(|s| vec![s]);
+                    r
+                });
+                dbg!(tsfn.clone().err());
+
+                let tsfn = tsfn.unwrap();
+                _wvb = _wvb.with_new_window_req_handler(move |uri| {
+                    let retVal = Rc::new(Cell::new(false));
+                    let rv = retVal.clone();
+                    let closure = Box::new(move |b: bool| {
+                        (*rv).set(b);
+                        napi::bindgen_prelude::Result::Ok(())
+                    }) as Box<dyn FnMut(bool) -> napi::bindgen_prelude::Result<()>>;
+                    tsfn.call_with_return_value(Ok(uri), ThreadsafeFunctionCallMode::Blocking, closure);
+                    retVal.get()
                 });
             }
         }

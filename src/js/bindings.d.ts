@@ -41,6 +41,7 @@ export interface WebViewSettings {
   useragent?: string
   defaultEventHandler?: boolean
   nativeFileHandler?: boolean
+  newWindowRequestHandler?: newWindowRequestHandler: (uri: String) => boolean
   ipcHandler?: boolean
 }
 export type InternalWebView = WebView
