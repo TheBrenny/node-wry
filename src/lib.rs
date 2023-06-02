@@ -1,7 +1,9 @@
 #![deny(clippy::all)]
 #![allow(non_snake_case)]
 
-use std::hash::{Hash, Hasher};
+use std::{
+    hash::{Hash, Hasher},
+};
 
 use wry::{
     application::{
@@ -14,6 +16,8 @@ use wry::{
     webview::{WebView, WebViewBuilder},
 };
 
+use anyhow::anyhow;
+
 mod settings;
 use settings::*;
 
@@ -22,6 +26,13 @@ use events::*;
 
 #[macro_use]
 extern crate napi_derive;
+use napi::{
+    threadsafe_function::{ErrorStrategy::{self, CalleeHandled}, ThreadsafeFunction, ThreadsafeFunctionCallMode},
+    Env, JsString,
+};
+// use napi::bindgen_prelude::{
+//     Env
+// };
 
 fn colorTupleFromString(color: &String) -> (u8, u8, u8, u8) {
     let mut color = color.to_string();
@@ -57,7 +68,7 @@ pub struct InternalWebView {
 #[napi]
 impl InternalWebView {
     #[napi(constructor)]
-    pub fn new(settingsObj: Option<NodeWebViewSettings>) -> Self {
+    pub fn new(env: Env, settingsObj: Option<NodeWebViewSettings>) -> Result<Self, anyhow::Error> {
         // Window Building
         let event_loop = EventLoop::<serde_json::Value>::with_user_event();
         let event_proxy = event_loop.create_proxy();
@@ -112,17 +123,17 @@ impl InternalWebView {
 
             let icon: Icon;
             if let Some(iconBuffer) = &settingsObj.icon {
-                let img = image::load_from_memory(&iconBuffer).unwrap();
+                let img = image::load_from_memory(&iconBuffer)?;
                 let imgW = img.width();
                 let imgH = img.height();
-                icon = Icon::from_rgba(img.as_bytes().to_vec(), imgW, imgH).unwrap();
+                icon = Icon::from_rgba(img.as_bytes().to_vec(), imgW, imgH)?;
                 _wb = _wb.with_window_icon(Some(icon));
             } else {
-                _wb = _wb.with_window_icon(Some(Icon::from_rgba(buildDefaultIcon(256), 256, 256).unwrap()));
+                _wb = _wb.with_window_icon(Some(Icon::from_rgba(buildDefaultIcon(256), 256, 256)?));
             }
         }
 
-        let _window = _wb.with_visible(false).build(&event_loop).unwrap(); // We need to build before we can centre
+        let _window = _wb.with_visible(false).build(&event_loop)?; // We need to build before we can centre
 
         // Window Centering
         let mut center = true;
@@ -132,14 +143,14 @@ impl InternalWebView {
             }
         }
         if center {
-            let (screenWidth, screenHeight): (u32, u32) = _window.current_monitor().unwrap().size().into();
+            let (screenWidth, screenHeight): (u32, u32) = _window.current_monitor().ok_or(anyhow!("Cannot find current monitor"))?.size().into();
             let (windowWidth, windowHeight): (u32, u32) = _window.outer_size().into();
             let (centerX, centerY) = ((screenWidth - windowWidth) / 2, (screenHeight - windowHeight) / 2);
             _window.set_outer_position(PhysicalPosition::new(centerX, centerY));
         }
 
         // Web View Building
-        let mut _wvb = WebViewBuilder::new(_window).unwrap();
+        let mut _wvb = WebViewBuilder::new(_window)?;
         let mut useDefaultEventHandler = true;
         if let Some(settingsObj) = &settingsObj {
             if let Some(acceptFirstMouse) = &settingsObj.acceptFirstMouse {
@@ -190,6 +201,28 @@ impl InternalWebView {
                     ep.send_event(event).unwrap();
                 });
             }
+
+            if let Some(func) = &settingsObj.winReqHandler {
+                // Trying tsfn
+                let tsfn: ThreadsafeFunction<u32> = func.create_threadsafe_function(0, move |_ctx| {
+                    let r = vec![1,2,3];
+                    Ok(r)
+                })?;
+
+                // The below is broken, unless we can fix the way that we access the function -- it takes ownership of settingsObj
+                // _wvb = _wvb.with_new_window_req_handler(move |uri: String| {
+                //     let s = env.create_string(uri.as_str()).unwrap();
+                //     let res = func.call::<JsString>(None, &[]);
+                //     match res {
+                //         Ok(jsUnknown) => jsUnknown.coerce_to_bool().unwrap().get_value().unwrap(),
+                //         Err(e) => {
+                //             println!("Err({:?})", e);
+                //             true
+                //         },
+                //     }
+                //     true
+                // });
+            }
         }
 
         // TODO: These are all things that I'll get to eventually
@@ -214,10 +247,10 @@ impl InternalWebView {
             }
         }
         if !setContent {
-            _wvb = _wvb.with_url("https://html5test.com/").unwrap();
+            _wvb = _wvb.with_url("https://html5test.com/")?;
         }
 
-        let webview = _wvb.build().unwrap();
+        let webview = _wvb.build()?;
 
         let mut devtools = cfg!(debug_assertions);
         if let Some(settingsObj) = &settingsObj {
@@ -237,13 +270,13 @@ impl InternalWebView {
         }
         webview.window().set_visible(visible);
 
-        Self {
+        Ok(Self {
             event_loop,
             // event_proxy,
             webview,
             defaultEventHandler: useDefaultEventHandler,
             hash: "".to_string(),
-        }
+        })
     }
 
     #[napi(getter)]

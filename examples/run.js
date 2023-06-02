@@ -15,13 +15,16 @@ let wv = new WebView({
     defaultEventHandler: false,
     transparent: true,
     ipcHandler: true,
+    winReqHandler: (t) => {
+        return t.length > 5;
+    }
 });
 
 wv.addWindowEventListener(({event, data}) => {
     if(event === EventType.WindowCloseRequested) {
         if(data.windowId === wv.id) {
             wv.kill();
-            process.exit(0);
+            // process.exit(0);
         }
     };
 

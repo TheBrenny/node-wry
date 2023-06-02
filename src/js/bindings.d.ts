@@ -42,6 +42,7 @@ export interface WebViewSettings {
   defaultEventHandler?: boolean
   nativeFileHandler?: boolean
   ipcHandler?: boolean
+  winReqHandler?: (...args: any[]) => any
 }
 export type InternalWebView = WebView
 export class WebView {
